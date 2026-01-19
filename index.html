@@ -596,26 +596,9 @@ const BASE_PATH = `/${REPO_NAME}/`;
 // Функция для получения правильного пути
 function getAssetPath(filename) {
     const cacheBuster = Date.now();
-    const relativePath = `video/${filename}?v=${cacheBuster}`;
-    
-    const isPWA = window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone === true;
-    if (isPWA) {
-        return BASE_PATH + relativePath;
-    }
-    return relativePath;
+    return `https://raw.githubusercontent.com/djvictorlich/MagicTrainig/main/video/${filename}?v=${cacheBuster}`;
 }
-    
-    // Для PWA (открыто с главного экрана)
-    const isPWA = window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone === true;
-    
-    if (isPWA) {
-        // В PWA используем абсолютные пути
-        return BASE_PATH + relativePath;
-    }
-    
-    // Для обычного браузера - относительные пути
-    return relativePath;
-}
+
 
 // === КОНФИГУРАЦИЯ ТРЕНИРОВОЧНОЙ ПРОГРАММЫ ===
 const program = [
@@ -1336,5 +1319,6 @@ window.addEventListener('load', initApp);
 </script>
 </body>
 </html>
+
 
 
