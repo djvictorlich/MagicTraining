@@ -2,22 +2,33 @@
 <html lang="ru">
 <head>
     <meta charset="UTF-8">
-    <title>Перенаправление на Gym Pro</title>
+    <title>Перенаправление на Magic Training</title>
     <script>
-        // Перенаправляем на главную страницу
-        const path = window.location.pathname;
-        const basePath = '/gym-pwa/';
+        // Автоматическое перенаправление на главную страницу
+        const repoName = 'MagicTrainig';
+        const correctPath = `/${repoName}/index.html`;
         
-        if (path === '/' || path === '/index.html' || path === basePath) {
-            window.location.href = basePath + 'index.html';
-        } else if (path.includes(basePath)) {
-            window.location.href = basePath + 'index.html';
-        } else {
-            window.location.href = basePath + 'index.html';
+        // Получаем текущий путь
+        const currentPath = window.location.pathname;
+        
+        // Проверяем, содержит ли путь название репозитория
+        if (!currentPath.includes(repoName)) {
+            // Если нет, перенаправляем
+            window.location.href = correctPath;
+        } else if (currentPath === `/${repoName}/` || currentPath === `/${repoName}`) {
+            // Если открыта корневая папка репозитория
+            window.location.href = correctPath;
         }
+        // Если путь уже правильный, ничего не делаем
     </script>
 </head>
 <body>
-    <p>Перенаправление на Gym Pro...</p>
+    <p>Перенаправление на Magic Training...</p>
+    <script>
+        // Резервное перенаправление через 2 секунды
+        setTimeout(() => {
+            window.location.href = '/MagicTrainig/index.html';
+        }, 2000);
+    </script>
 </body>
 </html>
