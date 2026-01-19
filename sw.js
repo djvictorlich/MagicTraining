@@ -53,46 +53,12 @@ self.addEventListener('activate', event => {
 
 // Обработка запросов
 self.addEventListener('fetch', event => {
-  const url = new URL(event.request.url);
+  const url = event.request.url;
   
-  // Для видео используем стратегию "Cache First, затем Network"
-  if (event.request.url.includes('.mp4')) {
-    console.log('[Service Worker] Запрос видео:', url.pathname);
-    
+  // Для Google Drive видео - пропускаем через Service Worker
+  if (url.includes('drive.google.com/file/d/') && url.includes('/preview')) {
     event.respondWith(
-      caches.open(VIDEO_CACHE_NAME).then(cache => {
-        return cache.match(event.request).then(cachedResponse => {
-          // Если видео есть в кэше, возвращаем его
-          if (cachedResponse) {
-            console.log('[Service Worker] Видео из кэша:', url.pathname);
-            return cachedResponse;
-          }
-          
-          // Если нет в кэше, загружаем из сети
-          console.log('[Service Worker] Загрузка видео из сети:', url.pathname);
-          return fetch(event.request).then(networkResponse => {
-            // Сохраняем в кэш для будущего использования
-            if (networkResponse.ok) {
-              console.log('[Service Worker] Сохраняем видео в кэш:', url.pathname);
-              cache.put(event.request, networkResponse.clone());
-            }
-            return networkResponse;
-          }).catch(error => {
-            console.log('[Service Worker] Ошибка загрузки видео:', url.pathname, error);
-            // Возвращаем заглушку для видео
-            return new Response(
-              JSON.stringify({ 
-                error: 'Видео недоступно',
-                message: 'Проверьте подключение к интернету' 
-              }),
-              {
-                status: 404,
-                headers: { 'Content-Type': 'application/json' }
-              }
-            );
-          });
-        });
-      })
+      handleGoogleDriveRequest(event.request)
     );
     return;
   }
@@ -113,7 +79,6 @@ self.addEventListener('fetch', event => {
             if (cachedResponse) {
               return cachedResponse;
             }
-            // Фолбэк для офлайн-режима
             return caches.match('/MagicTraining/');
           });
         })
@@ -129,12 +94,10 @@ self.addEventListener('fetch', event => {
           return cachedResponse;
         }
         return fetch(event.request).then(response => {
-          // Не кэшируем большие файлы или ненужные ресурсы
           if (!response || response.status !== 200 || response.type !== 'basic') {
             return response;
           }
           
-          // Сохраняем в кэш
           const responseToCache = response.clone();
           caches.open(CACHE_NAME).then(cache => {
             cache.put(event.request, responseToCache);
@@ -146,24 +109,66 @@ self.addEventListener('fetch', event => {
   );
 });
 
+// Обработка Google Drive запросов
+async function handleGoogleDriveRequest(request) {
+  const cache = await caches.open(VIDEO_CACHE_NAME);
+  
+  // Пробуем кэш
+  const cachedResponse = await cache.match(request);
+  if (cachedResponse) {
+    console.log('[SW] Google Drive видео из кэша');
+    return cachedResponse;
+  }
+  
+  try {
+    // Загружаем из сети
+    const networkResponse = await fetch(request, {
+      mode: 'no-cors',
+      credentials: 'omit'
+    });
+    
+    // Сохраняем в кэш
+    cache.put(request, networkResponse.clone());
+    
+    return networkResponse;
+    
+  } catch (error) {
+    console.log('[SW] Ошибка загрузки Google Drive видео:', error);
+    
+    // Фолбэк страница
+    return new Response(
+      `
+      <!DOCTYPE html>
+      <html>
+      <head><title>Видео недоступно</title></head>
+      <body style="text-align: center; padding: 50px; background: #f2f2f7;">
+        <h2 style="color: #333;">Видео временно недоступно</h2>
+        <p style="color: #666;">Проверьте подключение к интернету</p>
+        <p style="color: #666;">или откройте видео напрямую в Google Drive</p>
+      </body>
+      </html>
+      `,
+      {
+        headers: { 'Content-Type': 'text/html' }
+      }
+    );
+  }
+}
+
 // Фоновые задачи
 self.addEventListener('message', event => {
   if (event.data.action === 'CACHE_VIDEOS') {
     const videos = event.data.videos;
-    console.log('[Service Worker] Фоновое кэширование видео:', videos.length);
+    console.log('[SW] Фоновое кэширование видео:', videos.length);
     
     event.waitUntil(
       caches.open(VIDEO_CACHE_NAME).then(cache => {
         return Promise.all(
           videos.map(videoUrl => {
-            return fetch(videoUrl)
-              .then(response => {
-                if (response.ok) {
-                  return cache.put(videoUrl, response);
-                }
-              })
+            return fetch(videoUrl, { mode: 'no-cors' })
+              .then(response => cache.put(videoUrl, response))
               .catch(error => {
-                console.log('[Service Worker] Ошибка кэширования видео:', videoUrl, error);
+                console.log('[SW] Ошибка кэширования видео:', error);
               });
           })
         );
