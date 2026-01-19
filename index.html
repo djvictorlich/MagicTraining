@@ -594,10 +594,15 @@ const REPO_NAME = 'MagicTrainig';
 const BASE_PATH = `/${REPO_NAME}/`;
 
 // Функция для получения правильного пути
-function getAseetPath(filename) {
-    // Прямая raw ссылка на GitHub + параметр для обхода кэша
-    const cacheBuster = Date.now(); // или Date.now() для уникальности каждый раз
-    return `https://raw.githubusercontent.com/djvictorlich/MagicTrainig/main/video/${filename}?v=${cacheBuster}`;
+function getAssetPath(filename) {
+    const cacheBuster = Date.now();
+    const relativePath = `video/${filename}?v=${cacheBuster}`;
+    
+    const isPWA = window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone === true;
+    if (isPWA) {
+        return BASE_PATH + relativePath;
+    }
+    return relativePath;
 }
     
     // Для PWA (открыто с главного экрана)
@@ -1331,4 +1336,5 @@ window.addEventListener('load', initApp);
 </script>
 </body>
 </html>
+
 
