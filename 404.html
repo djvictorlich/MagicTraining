@@ -4,20 +4,16 @@
     <meta charset="UTF-8">
     <title>Перенаправление на Magic Training</title>
     <script>
-        // Проверяем, является ли запрос к статическому файлу
         const currentPath = window.location.pathname;
         
-        // Если это запрос к видео, аудио, изображениям или другим статическим файлам
         const staticFileExtensions = ['.mp4', '.webm', '.ogg', '.jpg', '.jpeg', '.png', '.gif', '.svg', '.ico', '.css', '.js', '.json', '.woff', '.woff2', '.ttf', '.eot'];
         
         const isStaticFile = staticFileExtensions.some(ext => currentPath.endsWith(ext));
         
         if (!isStaticFile) {
-            // Только для HTML-страниц перенаправляем на главную
             const repoName = 'MagicTraining';
             const correctPath = `/${repoName}/index.html`;
             
-            // Если путь не содержит название репозитория, добавляем его
             if (!currentPath.includes(repoName) && currentPath !== '/') {
                 window.location.href = correctPath;
             } else if (currentPath === `/${repoName}/` || currentPath === `/${repoName}`) {
