@@ -1,51 +1,51 @@
 {
-  "name": "Gym Pro",
-  "short_name": "Gym Pro",
+  "name": "Magic Training",
+  "short_name": "Magic Gym",
   "description": "Профессиональное приложение для тренировок",
-  "start_url": "/gym-pwa/",
-  "scope": "/gym-pwa/",
+  "start_url": "/MagicTrainig/",
+  "scope": "/MagicTrainig/",
   "display": "standalone",
   "background_color": "#f2f2f7",
   "theme_color": "#007AFF",
   "orientation": "portrait",
   "icons": [
     {
-      "src": "icons/icon-72.png",
+      "src": "/MagicTrainig/icons/icon-72.png",
       "sizes": "72x72",
       "type": "image/png"
     },
     {
-      "src": "icons/icon-96.png",
+      "src": "/MagicTrainig/icons/icon-96.png",
       "sizes": "96x96",
       "type": "image/png"
     },
     {
-      "src": "icons/icon-128.png",
+      "src": "/MagicTrainig/icons/icon-128.png",
       "sizes": "128x128",
       "type": "image/png"
     },
     {
-      "src": "icons/icon-144.png",
+      "src": "/MagicTrainig/icons/icon-144.png",
       "sizes": "144x144",
       "type": "image/png"
     },
     {
-      "src": "icons/icon-152.png",
+      "src": "/MagicTrainig/icons/icon-152.png",
       "sizes": "152x152",
       "type": "image/png"
     },
     {
-      "src": "icons/icon-192.png",
+      "src": "/MagicTrainig/icons/icon-192.png",
       "sizes": "192x192",
       "type": "image/png"
     },
     {
-      "src": "icons/icon-384.png",
+      "src": "/MagicTrainig/icons/icon-384.png",
       "sizes": "384x384",
       "type": "image/png"
     },
     {
-      "src": "icons/icon-512.png",
+      "src": "/MagicTrainig/icons/icon-512.png",
       "sizes": "512x512",
       "type": "image/png"
     }
@@ -56,14 +56,13 @@
       "name": "Начать тренировку",
       "short_name": "Тренировка",
       "description": "Начать новую тренировку",
-      "url": "/gym-pwa/index.html?start=workout"
+      "url": "/MagicTrainig/index.html?start=workout"
     },
     {
       "name": "Посмотреть статистику",
       "short_name": "Статистика",
       "description": "Посмотреть прогресс тренировок",
-      "url": "/gym-pwa/index.html?screen=stats"
+      "url": "/MagicTrainig/index.html?screen=stats"
     }
   ]
 }
-
