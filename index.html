@@ -25,6 +25,9 @@
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     
+    <!-- Kinescope Player -->
+    <script src="https://player.kinescope.io/latest/player.js"></script>
+    
     <style>
         :root {
             --bg: #f2f2f7;
@@ -39,6 +42,7 @@
             --warning: #ff9500;
             --danger: #ff3b30;
             --safe-area-inset-bottom: env(safe-area-inset-bottom);
+            --rest-timer: #ff9500;
         }
         
         @supports (padding: max(0px)) {
@@ -156,30 +160,7 @@
             box-shadow: 0 8px 25px rgba(0,0,0,0.15);
         }
         
-        .video-overlay {
-            position: absolute;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: rgba(0,0,0,0.7);
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            color: white;
-            text-align: center;
-            padding: 20px;
-            z-index: 10;
-            transition: opacity 0.3s ease;
-        }
-        
-        .video-overlay.hidden {
-            opacity: 0;
-            pointer-events: none;
-        }
-        
-        iframe {
+        #kinescope-player {
             width: 100%;
             height: 100%;
             border: none;
@@ -374,6 +355,70 @@
             box-shadow: 0 0 10px rgba(0,122,255,0.3);
         }
         
+        /* Таймер отдыха */
+        .rest-timer-container {
+            position: fixed;
+            bottom: 120px;
+            right: 20px;
+            z-index: 1000;
+            animation: slideInUp 0.3s ease;
+        }
+        
+        .rest-timer {
+            background: linear-gradient(135deg, #FF9500, #FF2D55);
+            color: white;
+            padding: 15px 20px;
+            border-radius: 16px;
+            box-shadow: 0 10px 30px rgba(255,149,0,0.3);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            min-width: 120px;
+            backdrop-filter: blur(10px);
+        }
+        
+        .rest-timer-time {
+            font-size: 32px;
+            font-weight: 800;
+            margin: 5px 0;
+            font-variant-numeric: tabular-nums;
+        }
+        
+        .rest-timer-label {
+            font-size: 12px;
+            opacity: 0.9;
+            text-align: center;
+        }
+        
+        .rest-timer-controls {
+            display: flex;
+            gap: 10px;
+            margin-top: 10px;
+        }
+        
+        .rest-timer-controls button {
+            padding: 8px 12px;
+            font-size: 13px;
+            width: auto;
+            flex: 1;
+            background: rgba(255,255,255,0.2);
+        }
+        
+        .rest-timer-controls button:hover {
+            background: rgba(255,255,255,0.3);
+        }
+        
+        @keyframes slideInUp {
+            from {
+                transform: translateY(20px);
+                opacity: 0;
+            }
+            to {
+                transform: translateY(0);
+                opacity: 1;
+            }
+        }
+        
         /* Уведомления */
         .toast {
             position: fixed;
@@ -461,6 +506,11 @@
             h1 {
                 font-size: 28px;
             }
+            
+            .rest-timer-container {
+                bottom: 110px;
+                right: 16px;
+            }
         }
         
         /* Исправление для маленьких экранов */
@@ -487,6 +537,9 @@
             <div style="display: flex; gap: 10px;">
                 <button onclick="syncData()" style="width: auto; padding: 8px 12px; background: rgba(0,122,255,0.1); color: var(--primary);">
                     <i class="fas fa-sync-alt"></i>
+                </button>
+                <button onclick="startRestTimer(60)" style="width: auto; padding: 8px 12px; background: rgba(255,149,0,0.1); color: var(--warning);">
+                    <i class="fas fa-clock"></i>
                 </button>
             </div>
         </div>
@@ -576,6 +629,9 @@
         <div id="history-list"></div>
     </div>
 
+    <!-- Таймер отдыха -->
+    <div id="rest-timer-container" class="rest-timer-container hidden"></div>
+
     <!-- Навигация -->
     <nav class="nav">
         <button class="nav-item active" onclick="showScreen('home')">
@@ -594,36 +650,40 @@
 
 <script>
 // === КОНСТАНТЫ ===
-const GOOGLE_DRIVE_IDS = {
+const KINESCOPE_VIDEOS = {
     // ДЕНЬ 1
-    'v1_1.mp4': '1yKgdbct34JqWzQurmyf5QzCB_12-NZGZ',
-    'v1_2.mp4': '1Il_CErVNAc4yafKH0L40DaPB8E8syIc7',
-    'v1_3.mp4': '1Kv40lU-0CIkCcFVe5ysKx7uVMCRdF-7c',
-    'v1_4.mp4': '1ixCcXgQyTjD1D-tJs9yaaOLYjLUx8TnN',
-    'v1_5.mp4': '1rgCfk0AxIlnUTgWtTsZEKVhvgZhOfQ-E',
-    'v1_6.mp4': '1fshuv4jB807YShc50YOXm2xGgTqob3VD',
-    'v1_7.mp4': '1VjPCbKhBf2VHGPs9MfMB-FepB9LXSUl_',
+    'v1_1.mp4': 'pS6oD4bPt6oVpXHBoDBXRA',
+    'v1_2.mp4': 'sbbgz7Mr2Jw1abV7DmVogf',
+    'v1_3.mp4': 'tjin1BtqHgbGdgJne8TVfa',
+    'v1_4.mp4': 'abJzGEsPWYPiUTcqXZYxir',
+    'v1_5.mp4': 'bkLeUjRBuuaDhbG3mZhJcL',
+    'v1_6.mp4': 'jdtNWSW1VrUk8tHtgpJFdS',
+    'v1_7.mp4': 'ofNNVecTf574ZSAnmcnELv',
     
     // ДЕНЬ 2
-    'v2_1.mp4': '1YlZnZbRpX59EuaHEHKmJSMwr4L65BiRA',
-    'v2_2.mp4': '1jPBljZv_4DSrLqAFH8AUyVUWKh-K7UkV',
-    'v2_3.mp4': '1EjAUQT-NJ3C0p4D-cm9RvW-svbCBOOm5',
-    'v2_4.mp4': '14XzIsdeZH0bPy04Idpiy_waOcIJIyGD4',
-    'v2_5.mp4': '18g48vEKgzqP9h5QCPkB_VhgLmwrg_LIK',
-    'v2_6.mp4': '1oKYZwaBTZBl3ENoHrzBMPvyg_aKmNyqh',
-    'v2_7.mp4': '1IxzEEbulyvji4ccCrVHUKqVMcUg7cgaQ',
+    'v2_1.mp4': '5BU1PAabmcnW7QArZvfP6y',
+    'v2_2.mp4': '8EcXZqHkLx75ryU1YQ7e7z',
+    'v2_3.mp4': 'kSpywTwF3EdpvmDzxfzKez',
+    'v2_4.mp4': '8hYDDXMgupefMuKCk4Xdeb',
+    'v2_5.mp4': 'rkbnq5EVCCufAqRkdFhtuB',
+    'v2_6.mp4': '7HNMbqFz52iPB66JPt6oRs',
+    'v2_7.mp4': 'gX4R5iCBFnE1JP6ZCnxFKg',
     
     // ДЕНЬ 3
-    'v3_1.mp4': '1Fi01SNHo5i4gkufbYwxgSGYRz6zKH46j',
-    'v3_2.mp4': '1nh7eUGeX9F4OVLUhWESUfR3diepZH_h8',
-    'v3_3.mp4': '1wuwEOH54NXooGVK_R2aPF-wW1f2MtU5C',
-    'v3_4.mp4': '1FfFD0JQQ94q1OT7nH4NaK-gFhpW_iby-',
-    'v3_5.mp4': '1rNpoj4i0noGFgVZIQo-xDHMdutTvKyoF',
-    'v3_6.mp4': '1j8V31hAWTG06KsbbOchgkOrum6zprAqv',
-    'v3_7.mp4': '1gyIlE5yEy_ucwota_Lmi3xVxUz4u51mx',
-    'v3_8.mp4': '1TQ16rfUVPnS5k83tN204QeFTLY_g_3V-',
-    'v3_9.mp4': '1UUQFtpTA8ovPcKIEKxLRRa57-ay3KD6k'
+    'v3_1.mp4': 'w8EpPpCxNckMKmKsQFXxjR',
+    'v3_2.mp4': 'kEnSn2z9TXuBKN1jNofjbk',
+    'v3_3.mp4': 'f3VoFvbXqXd7SuLx3wTE4f',
+    'v3_4.mp4': 'ogPkXM8PEe2EjFkEHHSi5U',
+    'v3_5.mp4': 'wGx2t9gfX5xJmMivAadT7J',
+    'v3_6.mp4': 'ctAtX8VynSJ4Pm92Q7nu81',
+    'v3_7.mp4': 'qDAAiyniZXQia86Zb9HugQ',
+    'v3_8.mp4': '5FnCEvW2wQVEAtA1GBmAgi',
+    'v3_9.mp4': '986UJATg7BdYmxnNEmsj4k'
 };
+
+// Кэш для видео
+const videoCache = new Map();
+let kinescopePlayer = null;
 
 // === ТРЕНИРОВОЧНАЯ ПРОГРАММА ===
 const program = [
@@ -810,19 +870,196 @@ let curDay = null;
 let curExIdx = 0;
 let logs = JSON.parse(localStorage.getItem('magic_gym_logs')) || [];
 let chartObj = null;
+let restTimer = null;
+let restTimeLeft = 0;
+let cachedVideos = JSON.parse(localStorage.getItem('magic_gym_video_cache')) || {};
 
-// === ПРОСТАЯ ФУНКЦИЯ ДЛЯ ПОЛУЧЕНИЯ ССЫЛКИ ===
+// === ФУНКЦИИ ДЛЯ ВИДЕО KINESCOPE ===
+
 function getVideoUrl(filename) {
-    const fileId = GOOGLE_DRIVE_IDS[filename];
-    if (!fileId) return null;
+    const videoId = KINESCOPE_VIDEOS[filename];
+    if (!videoId) return null;
     
-    // Без автовоспроизведения - просто preview ссылка
-    return `https://drive.google.com/file/d/${fileId}/preview`;
+    // Проверяем кэш
+    if (cachedVideos[videoId]) {
+        return cachedVideos[videoId].url;
+    }
+    
+    return `https://kinescope.io/embed/${videoId}`;
+}
+
+function loadKinescopeVideo(videoId, autoplay = true) {
+    if (kinescopePlayer) {
+        kinescopePlayer.destroy();
+    }
+    
+    const container = document.getElementById('kinescope-player-container');
+    if (!container) return;
+    
+    // Очищаем контейнер
+    container.innerHTML = '<div id="kinescope-player"></div>';
+    
+    // Инициализируем плеер
+    kinescopePlayer = new Kinescope.Player('kinescope-player', {
+        videoId: videoId,
+        width: '100%',
+        height: '100%',
+        autoplay: autoplay,
+        controls: true,
+        title: false,
+        ui: 'normal'
+    });
+    
+    // Сохраняем в кэш
+    cacheVideo(videoId);
+    
+    // Обработчики событий
+    kinescopePlayer.on('ready', () => {
+        console.log('Kinescope player ready');
+        showToast('Видео готово к воспроизведению');
+    });
+    
+    kinescopePlayer.on('error', (error) => {
+        console.error('Kinescope error:', error);
+        showToast('Ошибка загрузки видео');
+    });
+    
+    kinescopePlayer.on('end', () => {
+        console.log('Video ended');
+    });
+}
+
+function cacheVideo(videoId) {
+    if (!cachedVideos[videoId]) {
+        cachedVideos[videoId] = {
+            url: `https://kinescope.io/embed/${videoId}`,
+            cachedAt: Date.now()
+        };
+        
+        // Сохраняем в localStorage (ограничиваем размер)
+        const keys = Object.keys(cachedVideos);
+        if (keys.length > 20) {
+            // Удаляем самые старые записи
+            const sorted = keys.sort((a, b) => cachedVideos[a].cachedAt - cachedVideos[b].cachedAt);
+            sorted.slice(0, 5).forEach(key => delete cachedVideos[key]);
+        }
+        
+        localStorage.setItem('magic_gym_video_cache', JSON.stringify(cachedVideos));
+    }
+}
+
+// === ТАЙМЕР ОТДЫХА ===
+
+function startRestTimer(seconds = 60) {
+    stopRestTimer();
+    
+    restTimeLeft = seconds;
+    
+    const container = document.getElementById('rest-timer-container');
+    container.innerHTML = `
+        <div class="rest-timer">
+            <div class="rest-timer-label">ТАЙМЕР ОТДЫХА</div>
+            <div class="rest-timer-time">${formatTime(restTimeLeft)}</div>
+            <div class="rest-timer-controls">
+                <button onclick="pauseResumeTimer()" style="background: rgba(255,255,255,0.2);">
+                    <i class="fas fa-pause"></i>
+                </button>
+                <button onclick="addTime(30)" style="background: rgba(255,255,255,0.2);">
+                    +30с
+                </button>
+                <button onclick="stopRestTimer()" style="background: rgba(255,59,48,0.3);">
+                    <i class="fas fa-stop"></i>
+                </button>
+            </div>
+        </div>
+    `;
+    
+    container.classList.remove('hidden');
+    
+    restTimer = setInterval(() => {
+        restTimeLeft--;
+        
+        const timeElement = container.querySelector('.rest-timer-time');
+        if (timeElement) {
+            timeElement.textContent = formatTime(restTimeLeft);
+        }
+        
+        if (restTimeLeft <= 0) {
+            stopRestTimer();
+            showToast('⏰ Время отдыха закончилось!');
+            
+            // Вибро-отклик (если поддерживается)
+            if ('vibrate' in navigator) {
+                navigator.vibrate([200, 100, 200]);
+            }
+        }
+        
+        // Сохраняем состояние таймера
+        localStorage.setItem('rest_timer', JSON.stringify({
+            timeLeft: restTimeLeft,
+            startedAt: Date.now() - (seconds - restTimeLeft) * 1000
+        }));
+    }, 1000);
+    
+    showToast(`Таймер отдыха на ${seconds} секунд запущен`);
+}
+
+function pauseResumeTimer() {
+    if (!restTimer) {
+        // Восстанавливаем из localStorage
+        const saved = JSON.parse(localStorage.getItem('rest_timer'));
+        if (saved) {
+            const elapsed = Math.floor((Date.now() - saved.startedAt) / 1000);
+            const remaining = Math.max(0, saved.timeLeft - elapsed);
+            if (remaining > 0) {
+                startRestTimer(remaining);
+            }
+        }
+        return;
+    }
+    
+    clearInterval(restTimer);
+    restTimer = null;
+    
+    const container = document.getElementById('rest-timer-container');
+    const button = container.querySelector('button:first-child');
+    if (button) {
+        button.innerHTML = '<i class="fas fa-play"></i>';
+    }
+}
+
+function addTime(seconds) {
+    if (restTimer) {
+        restTimeLeft += seconds;
+        const timeElement = document.querySelector('.rest-timer-time');
+        if (timeElement) {
+            timeElement.textContent = formatTime(restTimeLeft);
+        }
+        showToast(`Добавлено ${seconds} секунд`);
+    }
+}
+
+function stopRestTimer() {
+    if (restTimer) {
+        clearInterval(restTimer);
+        restTimer = null;
+    }
+    
+    const container = document.getElementById('rest-timer-container');
+    container.classList.add('hidden');
+    container.innerHTML = '';
+    
+    localStorage.removeItem('rest_timer');
+}
+
+function formatTime(seconds) {
+    const mins = Math.floor(seconds / 60);
+    const secs = seconds % 60;
+    return `${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
 }
 
 // === ОСНОВНЫЕ ФУНКЦИИ ===
 
-// Показать/скрыть экран
 function showScreen(id) {
     document.querySelectorAll('.screen').forEach(s => s.classList.add('hidden'));
     document.getElementById('screen-' + id).classList.remove('hidden');
@@ -840,7 +1077,6 @@ function showScreen(id) {
     window.scrollTo(0, 0);
 }
 
-// Начать тренировку
 function startWorkout(dayIdx) {
     curDay = program[dayIdx];
     curExIdx = 0;
@@ -849,14 +1085,11 @@ function startWorkout(dayIdx) {
     showToast(`Начата ${curDay.day.split(':')[0]}`);
 }
 
-// Отрисовка упражнения
 function renderExercise() {
     const ex = curDay.exercises[curExIdx];
     const isLast = curExIdx === curDay.exercises.length - 1;
     const progress = ((curExIdx + 1) / curDay.exercises.length * 100).toFixed(0);
-    
-    const videoUrl = getVideoUrl(ex.video);
-    const driveViewUrl = `https://drive.google.com/file/d/${GOOGLE_DRIVE_IDS[ex.video]}/view`;
+    const videoId = KINESCOPE_VIDEOS[ex.video];
     
     let setsHtml = '';
     for(let i = 1; i <= 4; i++) {
@@ -901,26 +1134,21 @@ function renderExercise() {
             <div class="progress-bar" style="width: ${progress}%"></div>
         </div>
         
-        <div class="video-container" id="video-container">
-            <div class="video-overlay" id="video-overlay">
-                <i class="fas fa-play-circle" style="font-size: 48px; margin-bottom: 16px;"></i>
-                <h3 style="margin: 0 0 8px 0;">Видео упражнения</h3>
-                <p style="margin: 0 0 16px 0; font-size: 14px; opacity: 0.9;">
-                    Нажмите кнопку для загрузки видео
-                </p>
-                <button onclick="loadVideo()" 
-                        style="background: #4285F4; color: white; padding: 12px 24px; border-radius: 20px; border: none; font-size: 16px; font-weight: 600; cursor: pointer;">
-                    <i class="fas fa-play"></i> Загрузить и воспроизвести видео
-                </button>
-                <p style="margin-top: 12px; font-size: 12px; opacity: 0.7;">
-                    Или <a href="${driveViewUrl}" target="_blank" style="color: #FFCC00;">открыть в Google Drive</a>
-                </p>
+        <div class="video-container">
+            <div id="kinescope-player-container" style="width: 100%; height: 100%;">
+                <div id="kinescope-player"></div>
             </div>
-            <iframe id="video-frame" 
-                    style="width: 100%; height: 100%; border: none; display: none;"
-                    allow="autoplay; encrypted-media; fullscreen"
-                    allowfullscreen>
-            </iframe>
+        </div>
+        
+        <div class="card" style="text-align: center; padding: 16px;">
+            <div style="display: flex; gap: 10px; justify-content: center;">
+                <button onclick="startRestTimer(60)" style="width: auto; padding: 12px 20px; background: rgba(255,149,0,0.1); color: var(--warning); flex: 1;">
+                    <i class="fas fa-clock"></i> Таймер 60с
+                </button>
+                <button onclick="startRestTimer(90)" style="width: auto; padding: 12px 20px; background: rgba(255,149,0,0.2); color: var(--warning); flex: 1;">
+                    <i class="fas fa-clock"></i> Таймер 90с
+                </button>
+            </div>
         </div>
         
         <div class="card">
@@ -945,60 +1173,19 @@ function renderExercise() {
         </div>
     `;
     
+    // Загружаем видео с автовоспроизведением
+    if (videoId) {
+        setTimeout(() => {
+            loadKinescopeVideo(videoId, true);
+        }, 500);
+    }
+    
     setTimeout(() => {
         const firstInput = document.getElementById('w-1');
         if (firstInput) firstInput.focus();
     }, 300);
 }
 
-// Загрузка видео по требованию
-function loadVideo() {
-    const ex = curDay.exercises[curExIdx];
-    const videoUrl = getVideoUrl(ex.video);
-    
-    const overlay = document.getElementById('video-overlay');
-    const iframe = document.getElementById('video-frame');
-    
-    if (videoUrl && iframe) {
-        // Показываем загрузку
-        overlay.innerHTML = `
-            <i class="fas fa-spinner fa-spin" style="font-size: 48px; margin-bottom: 16px;"></i>
-            <p>Загружаем видео...</p>
-        `;
-        
-        // Устанавливаем источник iframe
-        iframe.src = videoUrl;
-        iframe.style.display = 'block';
-        
-        // Скрываем оверлей после загрузки iframe
-        iframe.onload = function() {
-            setTimeout(() => {
-                overlay.classList.add('hidden');
-                showToast('Видео загружено');
-            }, 500);
-        };
-        
-        // Обработка ошибок
-        iframe.onerror = function() {
-            overlay.innerHTML = `
-                <i class="fas fa-exclamation-triangle" style="font-size: 48px; margin-bottom: 16px; color: #ff9500;"></i>
-                <h3 style="margin: 0 0 8px 0;">Ошибка загрузки</h3>
-                <p style="margin: 0 0 16px 0; font-size: 14px; opacity: 0.9;">
-                    Не удалось загрузить видео
-                </p>
-                <button onclick="window.open('https://drive.google.com/file/d/${GOOGLE_DRIVE_IDS[ex.video]}/view', '_blank')" 
-                        style="background: #4285F4; color: white; padding: 12px 24px; border-radius: 20px; border: none; font-size: 16px; font-weight: 600; cursor: pointer;">
-                    <i class="fab fa-google-drive"></i> Открыть в Google Drive
-                </button>
-            `;
-            iframe.style.display = 'none';
-            overlay.classList.remove('hidden');
-            showToast('Ошибка загрузки видео');
-        };
-    }
-}
-
-// Сохранение упражнения
 function saveEx() {
     const ex = curDay.exercises[curExIdx];
     const results = [];
@@ -1031,6 +1218,11 @@ function saveEx() {
         localStorage.setItem('magic_gym_logs', JSON.stringify(logs));
         showToast(`Сохранено: ${ex.name}`);
         
+        // Запускаем таймер отдыха автоматически
+        if (curExIdx < curDay.exercises.length - 1) {
+            startRestTimer(60);
+        }
+        
         calculateDayProgress();
     }
     
@@ -1044,20 +1236,17 @@ function saveEx() {
     }
 }
 
-// Подтверждение выхода
 function confirmExit() {
     if (confirm('Вы уверены, что хотите выйти без сохранения прогресса?')) {
         showScreen('home');
     }
 }
 
-// Синхронизация данных
 function syncData() {
     showToast('Данные обновлены');
     calculateDayProgress();
 }
 
-// Уведомления
 function showToast(message) {
     const toast = document.getElementById('toast');
     toast.textContent = message;
@@ -1068,7 +1257,6 @@ function showToast(message) {
     }, 3000);
 }
 
-// Функция для расчета прогресса по дням
 function calculateDayProgress() {
     if (logs.length === 0) {
         updateProgressBars(0, 0, 0);
@@ -1146,7 +1334,6 @@ function updateWeeklyGoal(volume) {
     }
 }
 
-// Отрисовка статистики
 function renderStats() {
     const totalVolume = logs.reduce((sum, log) => sum + (log.totalVolume || 0), 0);
     document.getElementById('total-volume').textContent = `${totalVolume.toFixed(0)} кг`;
@@ -1199,7 +1386,6 @@ function renderStats() {
     }
 }
 
-// Удалить запись
 function deleteLog(index) {
     if (confirm('Удалить эту запись? Это действие нельзя отменить.')) {
         logs.splice(index, 1);
@@ -1210,7 +1396,6 @@ function deleteLog(index) {
     }
 }
 
-// Очистить историю
 function clearHistory() {
     if (confirm('Вы уверены, что хотите очистить всю историю тренировок?')) {
         logs = [];
@@ -1221,7 +1406,6 @@ function clearHistory() {
     }
 }
 
-// Инициализация графика
 function initChart() {
     const name = document.getElementById('chart-select').value;
     if (!name) return;
@@ -1323,11 +1507,20 @@ function initChart() {
     });
 }
 
-// Инициализация приложения
 function initApp() {
     calculateDayProgress();
     
-    // Регистрация Service Worker
+    // Восстанавливаем таймер, если он был активен
+    const savedTimer = JSON.parse(localStorage.getItem('rest_timer'));
+    if (savedTimer) {
+        const elapsed = Math.floor((Date.now() - savedTimer.startedAt) / 1000);
+        const remaining = Math.max(0, savedTimer.timeLeft - elapsed);
+        if (remaining > 0) {
+            startRestTimer(remaining);
+        }
+    }
+    
+    // Регистрация Service Worker для офлайн-режима
     if ('serviceWorker' in navigator) {
         navigator.serviceWorker.register('/MagicTraining/sw.js')
             .then(() => {
@@ -1351,6 +1544,17 @@ document.addEventListener('keydown', function(e) {
     if (e.key === 'Enter' && !e.target.matches('input')) {
         const btn = document.querySelector('#ex-content button');
         if (btn) btn.click();
+    }
+});
+
+// Остановка таймера при скрытии страницы
+document.addEventListener('visibilitychange', function() {
+    if (document.hidden && restTimer) {
+        // Сохраняем состояние таймера при скрытии страницы
+        localStorage.setItem('rest_timer', JSON.stringify({
+            timeLeft: restTimeLeft,
+            startedAt: Date.now() - (restTimeLeft - restTimeLeft) * 1000
+        }));
     }
 });
 
