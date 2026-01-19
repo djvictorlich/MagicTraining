@@ -1,0 +1,23 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <title>Перенаправление на Gym Pro</title>
+    <script>
+        // Перенаправляем на главную страницу
+        const path = window.location.pathname;
+        const basePath = '/gym-pwa/';
+        
+        if (path === '/' || path === '/index.html' || path === basePath) {
+            window.location.href = basePath + 'index.html';
+        } else if (path.includes(basePath)) {
+            window.location.href = basePath + 'index.html';
+        } else {
+            window.location.href = basePath + 'index.html';
+        }
+    </script>
+</head>
+<body>
+    <p>Перенаправление на Gym Pro...</p>
+</body>
+</html>
