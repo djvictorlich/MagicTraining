@@ -4,9 +4,9 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Magic Training</title>
-    <link rel="manifest" href="/MagicTrainig/manifest.json">
     
-    <!-- PWA мета-теги для iOS -->
+    <!-- PWA мета-теги -->
+    <link rel="manifest" href="/MagicTraining/manifest.json">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <meta name="apple-mobile-web-app-title" content="Magic Gym">
@@ -14,16 +14,15 @@
     <meta name="description" content="Профессиональное приложение для тренировок">
     
     <!-- Иконки для iOS -->
-    <link rel="apple-touch-icon" href="/MagicTrainig/icons/icon-152.png">
-    <link rel="apple-touch-icon" sizes="180x180" href="/MagicTrainig/icons/icon-180.png">
-    <link rel="apple-touch-icon" sizes="167x167" href="/MagicTrainig/icons/icon-167.png">
-    <link rel="apple-touch-icon" sizes="152x152" href="/MagicTrainig/icons/icon-152.png">
-    <link rel="apple-touch-icon" sizes="120x120" href="/MagicTrainig/icons/icon-120.png">
+    <link rel="apple-touch-icon" href="/MagicTraining/icons/icon-152.png">
+    <link rel="apple-touch-icon" sizes="180x180" href="/MagicTraining/icons/icon-180.png">
+    <link rel="apple-touch-icon" sizes="167x167" href="/MagicTraining/icons/icon-167.png">
+    <link rel="apple-touch-icon" sizes="152x152" href="/MagicTraining/icons/icon-152.png">
+    <link rel="apple-touch-icon" sizes="120x120" href="/MagicTraining/icons/icon-120.png">
+    <link rel="icon" href="/MagicTraining/icons/icon-152.png" type="image/png">
     
-    <link rel="icon" href="/MagicTrainig/icons/icon-152.png" type="image/png">
+    <!-- Зависимости -->
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-    
-    <!-- Шрифты iOS -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     
     <style>
@@ -157,16 +156,17 @@
             box-shadow: 0 8px 25px rgba(0,0,0,0.15);
         }
         
-        .video-container:before {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: 0;
-            right: 0;
-            height: 30px;
-            background: linear-gradient(to bottom, rgba(0,0,0,0.2), transparent);
-            z-index: 1;
-            border-radius: 16px 16px 0 0;
+        .video-placeholder {
+            width: 100%;
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 20px;
+            text-align: center;
         }
         
         video {
@@ -381,6 +381,8 @@
             -webkit-backdrop-filter: blur(20px);
             box-shadow: 0 10px 30px rgba(0,0,0,0.2);
             max-width: 90%;
+            font-size: 14px;
+            text-align: center;
         }
         
         .toast.show {
@@ -440,6 +442,64 @@
             animation: fadeIn 0.3s ease-out;
         }
         
+        /* Панель отладки */
+        .debug-panel {
+            position: fixed;
+            bottom: 100px;
+            left: 20px;
+            right: 20px;
+            background: rgba(0,0,0,0.8);
+            color: white;
+            padding: 15px;
+            border-radius: 12px;
+            font-size: 12px;
+            font-family: monospace;
+            z-index: 9999;
+            backdrop-filter: blur(10px);
+            display: none;
+            max-width: 560px;
+            margin: 0 auto;
+            box-shadow: 0 5px 20px rgba(0,0,0,0.3);
+        }
+        
+        .debug-panel.show {
+            display: block;
+            animation: fadeIn 0.3s ease;
+        }
+        
+        .debug-toggle {
+            position: fixed;
+            bottom: 100px;
+            right: 20px;
+            background: var(--primary);
+            color: white;
+            border: none;
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 10001;
+            cursor: pointer;
+            box-shadow: 0 4px 10px rgba(0,122,255,0.3);
+        }
+        
+        .debug-line {
+            margin-bottom: 5px;
+            line-height: 1.4;
+            word-break: break-all;
+        }
+        
+        .debug-line:last-child {
+            margin-bottom: 0;
+        }
+        
+        .debug-label {
+            color: #ff9500;
+            font-weight: bold;
+        }
+        
         /* Адаптивность */
         @media (max-width: 380px) {
             .screen {
@@ -463,14 +523,6 @@
                 padding: 12px;
             }
         }
-        
-        /* Исправление для Safari на iPhone */
-        @supports (-webkit-touch-callout: none) {
-            input {
-                font-size: 16px !important;
-                padding: 12px 14px !important;
-            }
-        }
     </style>
 </head>
 <body>
@@ -479,10 +531,13 @@
     <!-- Экран домашней страницы -->
     <div id="screen-home" class="screen">
         <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 24px;">
-            <h1>Тренировки</h1>
+            <h1>Magic Training</h1>
             <div style="display: flex; gap: 10px;">
                 <button onclick="syncData()" style="width: auto; padding: 8px 12px; background: rgba(0,122,255,0.1); color: var(--primary);">
                     <i class="fas fa-sync-alt"></i>
+                </button>
+                <button onclick="precacheAllVideos()" style="width: auto; padding: 8px 12px; background: rgba(52,199,89,0.1); color: var(--success);">
+                    <i class="fas fa-download"></i>
                 </button>
             </div>
         </div>
@@ -535,6 +590,19 @@
                 3 тренировки • <span id="weekly-goal">0</span>/12,500 кг общий тоннаж
             </p>
         </div>
+        
+        <div class="card">
+            <h3 style="margin-top: 0;"><i class="fas fa-video"></i> Управление видео</h3>
+            <p style="color: var(--text-secondary); margin-bottom: 15px;">
+                Статус кэша: <span id="cache-status">Проверка...</span>
+            </p>
+            <button onclick="checkVideoCache()" class="btn-secondary" style="margin-bottom: 8px;">
+                <i class="fas fa-search"></i> Проверить кэш
+            </button>
+            <button onclick="clearVideoCache()" style="background: rgba(255,59,48,0.1); color: var(--danger);">
+                <i class="fas fa-trash"></i> Очистить кэш видео
+            </button>
+        </div>
     </div>
 
     <!-- Экран упражнения -->
@@ -584,29 +652,97 @@
         </button>
     </nav>
     
+    <!-- Панель отладки -->
+    <button class="debug-toggle" onclick="toggleDebugPanel()">
+        <i class="fas fa-bug"></i>
+    </button>
+    
+    <div id="debug-panel" class="debug-panel">
+        <div id="debug-content"></div>
+    </div>
+    
     <!-- Уведомления -->
     <div id="toast" class="toast"></div>
 </div>
 
 <script>
-// === КОНСТАНТЫ И ПУТИ ===
-const REPO_NAME = 'MagicTrainig';
-const BASE_PATH = `/${REPO_NAME}/`;
+// === КОНСТАНТЫ И КОНФИГУРАЦИЯ ===
+const REPO_NAME = 'MagicTraining';
+const CACHE_NAME = 'magic-training-v1';
+const VIDEO_CACHE_NAME = 'magic-training-videos-v1';
 
-// Функция для получения правильного пути
-// Функция для получения правильного пути к видео
+// Глобальный объект для отладки
+const debug = {
+    logs: [],
+    enabled: false,
+    
+    log: function(message, type = 'info') {
+        const logEntry = {
+            time: new Date().toLocaleTimeString(),
+            message: message,
+            type: type
+        };
+        
+        this.logs.unshift(logEntry);
+        if (this.logs.length > 50) this.logs.pop();
+        
+        if (this.enabled) {
+            this.updatePanel();
+        }
+        
+        console.log(`[${type.toUpperCase()}] ${message}`);
+    },
+    
+    updatePanel: function() {
+        const panel = document.getElementById('debug-content');
+        if (!panel) return;
+        
+        panel.innerHTML = this.logs.map(log => 
+            `<div class="debug-line">
+                <span class="debug-label">[${log.time}] ${log.type.toUpperCase()}:</span> ${log.message}
+            </div>`
+        ).join('');
+    },
+    
+    toggle: function() {
+        this.enabled = !this.enabled;
+        const panel = document.getElementById('debug-panel');
+        if (panel) {
+            panel.classList.toggle('show', this.enabled);
+        }
+        if (this.enabled) {
+            this.updatePanel();
+        }
+    }
+};
+
+// === ФУНКЦИИ ДЛЯ РАБОТЫ С ПУТЯМИ ===
+
+// Получение правильного пути к ресурсам
 function getAssetPath(filename) {
-    // Для локальной разработки
-    if (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1') {
+    const isLocal = window.location.hostname === 'localhost' || 
+                    window.location.hostname === '127.0.0.1' ||
+                    window.location.protocol === 'file:';
+    
+    const isGitHub = window.location.hostname.includes('github.io');
+    
+    if (isLocal) {
+        debug.log(`Локальный путь: video/${filename}`, 'info');
         return `video/${filename}`;
     }
     
-    // Для GitHub Pages
-    const repo = window.location.pathname.split('/')[1] || 'MagicTrainig';
-    return `/${repo}/video/${filename}`;
+    if (isGitHub) {
+        const path = `/${REPO_NAME}/video/${filename}`;
+        debug.log(`GitHub Pages путь: ${path}`, 'info');
+        return path;
+    }
+    
+    // По умолчанию относительный путь
+    debug.log(`Относительный путь: video/${filename}`, 'info');
+    return `video/${filename}`;
 }
 
-// === КОНФИГУРАЦИЯ ТРЕНИРОВОЧНОЙ ПРОГРАММЫ ===
+// === ТРЕНИРОВОЧНАЯ ПРОГРАММА ===
 const program = [
     {
         day: "ДЕНЬ 1: Грудь + Спина + Кор",
@@ -615,49 +751,49 @@ const program = [
                 name: "Жим в рычажном тренажере Hammer Strength", 
                 tech: "✅ Отрегулируйте сиденье так, чтобы рукоятки были на уровне середины груди (сосков).\n✅ Сведите лопатки вместе и плотно прижмите спину к спинке.\n✅ На выдохе мощно выжмите рукояти вперед.\n❗️ Важно: В конечной точке не выпрямляйте локти до конца («до щелчка»), оставляйте их чуть мягкими, чтобы нагрузка оставалась в мышцах.\n✅ На вдохе медленно верните вес назад, максимально растягивая грудные мышцы.", 
                 volume: "4 подхода по 8–12 повторений", 
-                video: getAssetPath("video/v1_1.mp4"),
+                video: "v1_1.mp4",
                 icon: "fas fa-fire"
             },
             { 
                 name: "Тяга верхнего блока Life Fitness", 
                 tech: "✅ Зафиксируйте ноги валиком. Хват шире плеч.\n✅ Слегка прогните поясницу, грудь смотрит вверх.\n✅ Тяните рукоять к ключицам. Представьте, что тянете не кистями, а локтями вниз.\n✅ В нижней точке пауза на 1 секунду и сильно сожмите лопатки.\n✅ Плавно верните рукоять вверх, растягивая спину.", 
                 volume: "4 подхода по 10–12 повторений", 
-                video: getAssetPath("video/v1_2.mp4"),
+                video: "v1_2.mp4",
                 icon: "fas fa-arrow-down"
             },
             { 
                 name: "Жим гантелей на наклонной скамье", 
                 tech: "✅ Лягте, ноги жестко уприте в пол.\n✅ Поднимите гантели над собой. На вдохе опускайте их к краям грудных мышц.\n✅ Локти должны смотреть не в стороны, а немного вперед (под углом 75° к корпусу).\n✅ Опускайте глубоко, чувствуя растяжение. На выдохе выжмите вверх.", 
                 volume: "3 подхода по 10–12 повторений", 
-                video: getAssetPath("video/v1_3.mp4"),
+                video: "v1_3.mp4",
                 icon: "fas fa-angle-double-up"
             },
             { 
                 name: "Горизонтальная рычажная тяга Hammer", 
                 tech: "✅ Упритесь грудью в подушку. Хват нейтральный.\n✅ Тяните рукояти к поясу. Движение начинается с отведения плеч назад, затем локти.\n✅ В пиковой точке максимально сведите лопатки.\n❗️ Не раскачивайтесь корпусом, работает только спина.", 
                 volume: "3 подхода по 10–12 повторений", 
-                video: getAssetPath("video/v1_4.mp4"),
+                video: "v1_4.mp4",
                 icon: "fas fa-dumbbell"
             },
             { 
                 name: "Сведение рук в тренажере 'Бабочка'", 
                 tech: "✅ Локти держите на уровне плеч и слегка согнутыми.\n✅ На выдохе сводите рукояти перед собой. В момент сведения напрягите грудь на 1 секунду.\n✅ Медленно разводите руки обратно.", 
                 volume: "3 подхода по 12–15 повторений", 
-                video: getAssetPath("video/v1_5.mp4"),
+                video: "v1_5.mp4",
                 icon: "fas fa-compress-alt"
             },
             { 
                 name: "Скручивания (пресс)", 
                 tech: "✅ Округляйте спину, скручивайтесь в 'улитку'.\n✅ Не поднимайтесь с прямой спиной.", 
                 volume: "3 подхода по 15–20 раз", 
-                video: getAssetPath("video/v1_6.mp4"),
+                video: "v1_6.mp4",
                 icon: "fas fa-running"
             },
             { 
                 name: "Планка", 
                 tech: "✅ Упор на локти и носки. Тело прямое как доска.", 
                 volume: "3 подхода по 60 секунд", 
-                video: getAssetPath("video/v1_7.mp4"),
+                video: "v1_7.mp4",
                 icon: "fas fa-clock"
             }
         ]
@@ -669,49 +805,49 @@ const program = [
                 name: "Разгибание ног в тренажере", 
                 tech: "✅ Коленный сустав строго напротив оси вращения тренажера.\n✅ На выдохе полностью выпрямите ноги. В верхней точке задержитесь на 1-2 секунды.\n✅ Медленно опустите.", 
                 volume: "3 подхода по 15 повторений", 
-                video: getAssetPath("video/v2_1.mp4"),
+                video: "v2_1.mp4",
                 icon: "fas fa-angle-up"
             },
             { 
                 name: "Жим ногами", 
                 tech: "✅ Поставьте ноги на ширине плеч.\n✅ На вдохе опускайте платформу глубоко, но следите, чтобы таз не отрывался.\n✅ На выдохе толкайте платформу пятками.\n❗️ Важно: Никогда не выпрямляйте колени полностью!", 
                 volume: "4 подхода по 10–12 повторений", 
-                video: getAssetPath("video/v2_2.mp4"),
+                video: "v2_2.mp4",
                 icon: "fas fa-shoe-prints"
             },
             { 
                 name: "Румынская тяга с гантелями", 
                 tech: "✅ Колени чуть согнуты и зафиксированы.\n✅ Начинайте движение с отведения таза назад. Гантели скользят по ногам.\n✅ Опускайтесь до середины голени. Вы должны чувствовать натяжение под коленями.\n✅ На выдохе вернитесь, сжимая ягодицы.", 
                 volume: "4 подхода по 10–12 повторений", 
-                video: getAssetPath("video/v2_3.mp4"),
+                video: "v2_3.mp4",
                 icon: "fas fa-weight-hanging"
             },
             { 
                 name: "Сгибание ног (бицепс бедра)", 
                 tech: "✅ Прижмите таз к скамье и не отрывайте его.\n✅ Быстро согните ноги, стараясь коснуться ягодиц.\n✅ Медленно (на 3 счета) разогните ноги обратно.", 
                 volume: "3 подхода по 12–15 повторений", 
-                video: getAssetPath("video/v2_4.mp4"),
+                video: "v2_4.mp4",
                 icon: "fas fa-angle-down"
             },
             { 
                 name: "Подъемы на носки", 
                 tech: "✅ Опустите пятки максимально низко, затем поднимите максимально высоко.", 
                 volume: "4 подхода по 15–20 повторений", 
-                video: getAssetPath("video/v2_5.mp4"),
+                video: "v2_5.mp4",
                 icon: "fas fa-arrow-up"
             },
             { 
                 name: "Подъем ног (пресс)", 
                 tech: "✅ В упоре на локтях. Старайтесь подкручивать таз вверх.\n✅ Движения плавные без раскачки.", 
                 volume: "3 подхода по 12–15 раз", 
-                video: getAssetPath("video/v2_6.mp4"),
+                video: "v2_6.mp4",
                 icon: "fas fa-running"
             },
             { 
                 name: "Скручивания", 
                 tech: "✅ Округляйте спину, скручивайтесь в 'улитку'.", 
                 volume: "3 подхода по 15–20 раз", 
-                video: getAssetPath("video/v2_7.mp4"),
+                video: "v2_7.mp4",
                 icon: "fas fa-running"
             }
         ]
@@ -723,63 +859,63 @@ const program = [
                 name: "Жим гантелей сидя (Плечи)", 
                 tech: "✅ Сядьте, плотно прижмитесь спиной. Гантели на уровне ушей.\n✅ Выжмите гантели вверх по дуге, сводя их над головой.\n✅ Плавно опустите до уровня ушей.", 
                 volume: "4 подхода по 8–12 повторений", 
-                video: getAssetPath("video/v3_1.mp4"),
+                video: "v3_1.mp4",
                 icon: "fas fa-angle-double-up"
             },
             { 
                 name: "Разведение гантелей в стороны (Махи)", 
                 tech: "✅ Встаньте прямо, небольшой наклон вперед.\n✅ Поднимайте руки через стороны. Локоть выше кисти, мизинец выше большого пальца.\n✅ Только до параллели с полом.", 
                 volume: "3 подхода по 12–15 повторений", 
-                video: getAssetPath("video/v3_2.mp4"),
+                video: "v3_2.mp4",
                 icon: "fas fa-arrows-alt-h"
             },
             { 
                 name: "Обратные разведения (Задняя дельта)", 
                 tech: "✅ Сядьте лицом к спинке тренажера.\n✅ Отводите прямые руки назад так далеко, как можете.\n✅ Чувствуйте зад плеч, а не спину.", 
                 volume: "3 подхода по 12–15 повторений", 
-                video: getAssetPath("video/v3_3.mp4"),
+                video: "v3_3.mp4",
                 icon: "fas fa-arrow-right"
             },
             { 
                 name: "Разгибание на блоке (Трицепс)", 
                 tech: "✅ Прижмите локти к корпусу.\n✅ Разгибайте руки вниз. В нижней точке разведите концы каната.", 
                 volume: "3 подхода по 12–15 повторений", 
-                video: getAssetPath("video/v3_4.mp4"),
+                video: "v3_4.mp4",
                 icon: "fas fa-angle-down"
             },
             { 
                 name: "Французский жим лежа", 
                 tech: "✅ Сгибайте руки, заводя гриф глубоко за голову.\n✅ Локти смотрят в потолок.\n✅ Почувствуйте растяжение трицепса и выжмите вверх.", 
                 volume: "3 подхода по 10–12 повторений", 
-                video: getAssetPath("video/v3_5.mp4"),
+                video: "v3_5.mp4",
                 icon: "fas fa-weight"
             },
             { 
                 name: "Сгибание рук с супинацией (Бицепс)", 
                 tech: "✅ Начинайте подъем, разворачивая кисть наружу.\n✅ В верхней точке мизинец выше большого пальца.", 
                 volume: "3 подхода по 10–12 повторений", 
-                video: getAssetPath("video/v3_6.mp4"),
+                video: "v3_6.mp4",
                 icon: "fas fa-dumbbell"
             },
             { 
                 name: "Молотки", 
                 tech: "✅ Ладони смотрят друг на друга все время. Без разворота.", 
                 volume: "3 подхода по 10–12 повторений", 
-                video: getAssetPath("video/v3_7.mp4"),
+                video: "v3_7.mp4",
                 icon: "fas fa-hammer"
             },
             { 
                 name: "Русский твист", 
                 tech: "✅ Сидя, ноги на весу, поворачивайте корпус в стороны.", 
                 volume: "3 подхода по 20 раз", 
-                video: getAssetPath("video/v3_8.mp4"),
+                video: "v3_8.mp4",
                 icon: "fas fa-sync-alt"
             },
             { 
                 name: "Молитва на блоке", 
                 tech: "✅ Стоя на коленях, скручивайтесь вниз силой пресса.", 
                 volume: "3 подхода по 15–20 раз", 
-                video: getAssetPath("video/v3_9.mp4"),
+                video: "v3_9.mp4",
                 icon: "fas fa-pray"
             }
         ]
@@ -791,11 +927,506 @@ let curDay = null;
 let curExIdx = 0;
 let logs = JSON.parse(localStorage.getItem('magic_gym_logs')) || [];
 let chartObj = null;
-const MAX_LOG_ENTRIES = 500;
 
-// === ОСНОВНЫЕ ФУНКЦИИ ===
+// === ОСНОВНЫЕ ФУНКЦИИ ПРИЛОЖЕНИЯ ===
 
-// Функция для расчета прогресса по дням
+// Показать/скрыть экран
+function showScreen(id) {
+    document.querySelectorAll('.screen').forEach(s => s.classList.add('hidden'));
+    document.getElementById('screen-' + id).classList.remove('hidden');
+    
+    document.querySelectorAll('.nav-item').forEach(i => i.classList.remove('active'));
+    if(id === 'home') {
+        document.querySelectorAll('.nav-item')[0].classList.add('active');
+        setTimeout(calculateDayProgress, 50);
+        updateCacheStatus();
+    }
+    if(id === 'stats') { 
+        document.querySelectorAll('.nav-item')[1].classList.add('active'); 
+        renderStats(); 
+    }
+    
+    window.scrollTo(0, 0);
+}
+
+// Начать тренировку
+function startWorkout(dayIdx) {
+    curDay = program[dayIdx];
+    curExIdx = 0;
+    showScreen('exercise');
+    renderExercise();
+    showToast(`Начата ${curDay.day.split(':')[0]}`);
+}
+
+// Отрисовка упражнения
+function renderExercise() {
+    const ex = curDay.exercises[curExIdx];
+    const isLast = curExIdx === curDay.exercises.length - 1;
+    const progress = ((curExIdx + 1) / curDay.exercises.length * 100).toFixed(0);
+    
+    const videoPath = getAssetPath(ex.video);
+    debug.log(`Загрузка видео: ${ex.video}`, 'info');
+    debug.log(`Полный путь: ${videoPath}`, 'info');
+    
+    let setsHtml = '';
+    for(let i = 1; i <= 4; i++) {
+        setsHtml += `<div class="set-row">
+            <div class="input-box">
+                <label><i class="fas fa-weight"></i> Вес (кг)</label>
+                <input type="number" 
+                       step="0.5" 
+                       id="w-${i}" 
+                       placeholder="0" 
+                       inputmode="decimal"
+                       pattern="[0-9]*"
+                       style="font-size: 16px; width: 100%;">
+            </div>
+            <div class="input-box">
+                <label><i class="fas fa-redo"></i> Повторы</label>
+                <input type="number" 
+                       id="r-${i}" 
+                       placeholder="0" 
+                       inputmode="numeric"
+                       pattern="[0-9]*"
+                       style="font-size: 16px; width: 100%;">
+            </div>
+        </div>`;
+    }
+
+    document.getElementById('ex-content').innerHTML = `
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px;">
+            <div>
+                <p style="color: var(--text-secondary); margin: 0; font-size: 14px;">${curDay.day}</p>
+                <h1 style="margin: 4px 0 0 0; font-size: 24px;">
+                    <i class="${ex.icon}" style="color: var(--primary); margin-right: 8px;"></i>
+                    ${ex.name}
+                </h1>
+            </div>
+            <div style="background: var(--primary); color: white; padding: 8px 12px; border-radius: 20px; font-weight: 600;">
+                ${curExIdx + 1}/${curDay.exercises.length}
+            </div>
+        </div>
+        
+        <div class="progress-container">
+            <div class="progress-bar" style="width: ${progress}%"></div>
+        </div>
+        
+        <div class="video-container">
+            <video id="exercise-video" playsinline loop controls preload="metadata" 
+                   style="width: 100%; height: 100%;"
+                   onerror="handleVideoError(this, '${videoPath}')"
+                   onloadeddata="handleVideoLoaded(this)">
+                <source src="${videoPath}" type="video/mp4">
+                Ваш браузер не поддерживает видео.
+            </video>
+        </div>
+        
+        <div class="card">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
+                <h3 style="margin: 0;"><i class="fas fa-clipboard-list"></i> Техника выполнения</h3>
+                <span style="background: rgba(0,122,255,0.1); color: var(--primary); padding: 4px 10px; border-radius: 12px; font-size: 13px; font-weight: 600;">
+                    ${ex.volume}
+                </span>
+            </div>
+            <div class="tech-text">${ex.tech}</div>
+        </div>
+        
+        <div class="card">
+            <h3 style="margin-top: 0;"><i class="fas fa-edit"></i> Запись подхода</h3>
+            ${setsHtml}
+            <button onclick="saveEx()">
+                <i class="fas fa-save"></i> ${isLast ? 'ЗАВЕРШИТЬ ТРЕНИРОВКУ' : 'СОХРАНИТЬ И ДАЛЕЕ'}
+            </button>
+            <button class="btn-secondary" onclick="confirmExit()">
+                <i class="fas fa-times"></i> ВЫЙТИ БЕЗ СОХРАНЕНИЯ
+            </button>
+        </div>
+    `;
+    
+    // Пробуем загрузить видео из кэша
+    loadVideoFromCache(videoPath).then(cached => {
+        if (!cached) {
+            debug.log(`Видео не найдено в кэше: ${ex.video}`, 'warning');
+        }
+    });
+    
+    setTimeout(() => {
+        const firstInput = document.getElementById('w-1');
+        if (firstInput) firstInput.focus();
+    }, 300);
+}
+
+// Обработка загрузки видео
+function handleVideoLoaded(videoElement) {
+    debug.log(`Видео загружено успешно: ${videoElement.src}`, 'success');
+    showToast('Видео загружено');
+    
+    // Сохраняем в кэш при успешной загрузке
+    cacheVideo(videoElement.src).then(() => {
+        debug.log(`Видео сохранено в кэш: ${videoElement.src}`, 'info');
+    });
+}
+
+// Обработка ошибки видео с детальной информацией
+function handleVideoError(videoElement, videoPath) {
+    const errorDetails = {
+        videoPath: videoPath,
+        videoElementSrc: videoElement.src,
+        networkStatus: navigator.onLine ? 'online' : 'offline',
+        timestamp: new Date().toISOString(),
+        errorCode: videoElement.error ? videoElement.error.code : 'unknown',
+        errorMessage: videoElement.error ? videoElement.error.message : 'Нет деталей ошибки'
+    };
+    
+    debug.log(`ОШИБКА ВИДЕО: ${JSON.stringify(errorDetails, null, 2)}`, 'error');
+    
+    // Показываем подробную информацию пользователю
+    videoElement.style.display = 'none';
+    const container = videoElement.parentElement;
+    
+    container.innerHTML = `
+        <div class="video-placeholder">
+            <i class="fas fa-video-slash" style="font-size: 48px; margin-bottom: 16px;"></i>
+            <h3 style="margin: 0 0 8px 0; color: white;">Ошибка загрузки видео</h3>
+            <p style="margin: 0 0 4px 0; font-size: 14px; opacity: 0.9;">Файл: ${videoPath.split('/').pop()}</p>
+            <p style="margin: 0 0 4px 0; font-size: 14px; opacity: 0.9;">Статус сети: ${errorDetails.networkStatus}</p>
+            <p style="margin: 0 0 12px 0; font-size: 14px; opacity: 0.9;">${errorDetails.errorMessage}</p>
+            <button onclick="retryVideoLoad('${videoPath}')" style="background: white; color: #667eea; padding: 8px 16px; border-radius: 20px; border: none; font-weight: 600;">
+                <i class="fas fa-redo"></i> Повторить загрузку
+            </button>
+        </div>
+    `;
+    
+    showToast('Ошибка загрузки видео');
+}
+
+// Повторная попытка загрузки видео
+function retryVideoLoad(videoPath) {
+    debug.log(`Повторная загрузка видео: ${videoPath}`, 'info');
+    
+    const container = document.querySelector('.video-placeholder');
+    if (container) {
+        container.innerHTML = `
+            <div style="text-align: center;">
+                <i class="fas fa-spinner fa-spin" style="font-size: 36px; margin-bottom: 16px;"></i>
+                <p>Загружаем видео...</p>
+            </div>
+        `;
+    }
+    
+    // Пробуем загрузить из кэша
+    loadVideoFromCache(videoPath).then(cached => {
+        if (cached) {
+            debug.log(`Видео загружено из кэша: ${videoPath}`, 'success');
+            location.reload(); // Перезагружаем страницу для отображения видео
+        } else {
+            // Пробуем прямую загрузку
+            const videoElement = document.createElement('video');
+            videoElement.oncanplay = function() {
+                debug.log(`Прямая загрузка успешна: ${videoPath}`, 'success');
+                location.reload();
+            };
+            videoElement.onerror = function() {
+                debug.log(`Прямая загрузка тоже не удалась: ${videoPath}`, 'error');
+                showToast('Видео недоступно. Используйте текстовую инструкцию.');
+            };
+            videoElement.src = videoPath;
+            videoElement.load();
+        }
+    });
+}
+
+// === ФУНКЦИИ ДЛЯ РАБОТЫ С КЭШЕМ ===
+
+// Кэширование видео
+async function cacheVideo(url) {
+    try {
+        const cache = await caches.open(VIDEO_CACHE_NAME);
+        const response = await fetch(url);
+        if (response.ok) {
+            await cache.put(url, response);
+            debug.log(`Видео закэшировано: ${url}`, 'success');
+            return true;
+        }
+    } catch (error) {
+        debug.log(`Ошибка кэширования видео ${url}: ${error.message}`, 'error');
+    }
+    return false;
+}
+
+// Загрузка видео из кэша
+async function loadVideoFromCache(url) {
+    try {
+        const cache = await caches.open(VIDEO_CACHE_NAME);
+        const response = await cache.match(url);
+        if (response) {
+            debug.log(`Видео найдено в кэше: ${url}`, 'success');
+            return response;
+        }
+    } catch (error) {
+        debug.log(`Ошибка загрузки из кэша ${url}: ${error.message}`, 'error');
+    }
+    return null;
+}
+
+// Предварительное кэширование всех видео
+async function precacheAllVideos() {
+    showToast('Начинаем кэширование видео...');
+    debug.log('Начато предварительное кэширование всех видео', 'info');
+    
+    const videoFiles = [];
+    program.forEach(day => {
+        day.exercises.forEach(ex => {
+            if (ex.video && !videoFiles.includes(ex.video)) {
+                videoFiles.push(ex.video);
+            }
+        });
+    });
+    
+    debug.log(`Всего видео для кэширования: ${videoFiles.length}`, 'info');
+    
+    let successCount = 0;
+    let failCount = 0;
+    
+    for (let i = 0; i < videoFiles.length; i++) {
+        const videoFile = videoFiles[i];
+        const videoPath = getAssetPath(videoFile);
+        
+        showToast(`Кэшируем видео ${i+1}/${videoFiles.length}...`);
+        debug.log(`Кэшируем: ${videoFile} (${videoPath})`, 'info');
+        
+        try {
+            const cached = await cacheVideo(videoPath);
+            if (cached) {
+                successCount++;
+                debug.log(`✅ Успешно: ${videoFile}`, 'success');
+            } else {
+                failCount++;
+                debug.log(`❌ Ошибка: ${videoFile}`, 'error');
+            }
+        } catch (error) {
+            failCount++;
+            debug.log(`❌ Исключение: ${videoFile} - ${error.message}`, 'error');
+        }
+        
+        // Небольшая пауза между запросами
+        await new Promise(resolve => setTimeout(resolve, 100));
+    }
+    
+    const message = `Кэширование завершено: ${successCount} успешно, ${failCount} с ошибками`;
+    showToast(message);
+    debug.log(message, successCount > 0 ? 'success' : 'error');
+    
+    updateCacheStatus();
+}
+
+// Проверка статуса кэша
+async function checkVideoCache() {
+    debug.log('Проверка состояния кэша видео...', 'info');
+    
+    try {
+        const cache = await caches.open(VIDEO_CACHE_NAME);
+        const keys = await cache.keys();
+        
+        const videoFiles = [];
+        program.forEach(day => {
+            day.exercises.forEach(ex => {
+                if (ex.video) videoFiles.push(ex.video);
+            });
+        });
+        
+        const cachedFiles = keys.map(key => key.url.split('/').pop());
+        const missingFiles = videoFiles.filter(file => !cachedFiles.includes(file));
+        
+        debug.log(`Всего видео в программе: ${videoFiles.length}`, 'info');
+        debug.log(`В кэше найдено: ${cachedFiles.length}`, 'info');
+        debug.log(`Отсутствуют в кэше: ${missingFiles.length}`, 
+                 missingFiles.length > 0 ? 'warning' : 'success');
+        
+        if (missingFiles.length > 0) {
+            debug.log(`Отсутствующие файлы: ${missingFiles.join(', ')}`, 'warning');
+        }
+        
+        const statusText = `${cachedFiles.length}/${videoFiles.length} видео в кэше`;
+        document.getElementById('cache-status').textContent = statusText;
+        
+        showToast(`Кэш: ${cachedFiles.length}/${videoFiles.length} видео`);
+        
+    } catch (error) {
+        debug.log(`Ошибка проверки кэша: ${error.message}`, 'error');
+        document.getElementById('cache-status').textContent = 'Ошибка проверки';
+    }
+}
+
+// Очистка кэша видео
+async function clearVideoCache() {
+    if (confirm('Вы уверены, что хотите очистить кэш видео? Это удалит все скачанные видео.')) {
+        try {
+            const deleted = await caches.delete(VIDEO_CACHE_NAME);
+            if (deleted) {
+                debug.log('Кэш видео успешно очищен', 'success');
+                showToast('Кэш видео очищен');
+                updateCacheStatus();
+            } else {
+                debug.log('Кэш видео не найден', 'info');
+                showToast('Кэш видео не найден');
+            }
+        } catch (error) {
+            debug.log(`Ошибка очистки кэша: ${error.message}`, 'error');
+            showToast('Ошибка очистки кэша');
+        }
+    }
+}
+
+// Обновление статуса кэша
+async function updateCacheStatus() {
+    try {
+        const cache = await caches.open(VIDEO_CACHE_NAME);
+        const keys = await cache.keys();
+        const videoFiles = [];
+        program.forEach(day => {
+            day.exercises.forEach(ex => {
+                if (ex.video) videoFiles.push(ex.video);
+            });
+        });
+        
+        const statusText = `${keys.length}/${videoFiles.length} видео в кэше`;
+        const statusElement = document.getElementById('cache-status');
+        if (statusElement) {
+            statusElement.textContent = statusText;
+        }
+    } catch (error) {
+        const statusElement = document.getElementById('cache-status');
+        if (statusElement) {
+            statusElement.textContent = 'Ошибка проверки';
+        }
+    }
+}
+
+// === ОСТАЛЬНЫЕ ФУНКЦИИ ===
+
+// Сохранение упражнения
+function saveEx() {
+    const ex = curDay.exercises[curExIdx];
+    const results = [];
+    
+    for(let i = 1; i <= 4; i++) {
+        const w = document.getElementById(`w-${i}`).value;
+        const r = document.getElementById(`r-${i}`).value;
+        if(w && r) {
+            results.push({
+                w: parseFloat(w),
+                r: parseInt(r),
+                volume: parseFloat(w) * parseInt(r)
+            });
+        }
+    }
+    
+    if(results.length > 0) {
+        logs.push({
+            t: Date.now(),
+            d: new Date().toLocaleDateString('ru-RU', { 
+                weekday: 'short', 
+                year: 'numeric', 
+                month: 'short', 
+                day: 'numeric' 
+            }),
+            n: ex.name,
+            s: results,
+            totalVolume: results.reduce((sum, s) => sum + s.volume, 0)
+        });
+        localStorage.setItem('magic_gym_logs', JSON.stringify(logs));
+        showToast(`Сохранено: ${ex.name}`);
+        
+        calculateDayProgress();
+    }
+    
+    if(curExIdx < curDay.exercises.length - 1) {
+        curExIdx++;
+        renderExercise();
+    } else {
+        const totalVolume = logs.slice(-curDay.exercises.length).reduce((sum, log) => sum + log.totalVolume, 0);
+        showToast(`Тренировка завершена! Тоннаж: ${totalVolume.toFixed(0)}кг`);
+        setTimeout(() => showScreen('home'), 1500);
+    }
+}
+
+// Подтверждение выхода
+function confirmExit() {
+    if (confirm('Вы уверены, что хотите выйти без сохранения прогресса?')) {
+        showScreen('home');
+    }
+}
+
+// Синхронизация данных
+function syncData() {
+    showToast('Данные обновлены');
+    calculateDayProgress();
+    updateCacheStatus();
+}
+
+// Уведомления
+function showToast(message) {
+    const toast = document.getElementById('toast');
+    toast.textContent = message;
+    toast.classList.add('show');
+    
+    setTimeout(() => {
+        toast.classList.remove('show');
+    }, 3000);
+}
+
+// Управление панелью отладки
+function toggleDebugPanel() {
+    debug.toggle();
+}
+
+// Инициализация приложения
+function initApp() {
+    debug.log('Приложение инициализировано', 'info');
+    debug.log(`URL: ${window.location.href}`, 'info');
+    debug.log(`Режим PWA: ${window.matchMedia('(display-mode: standalone)').matches}`, 'info');
+    debug.log(`Сеть: ${navigator.onLine ? 'online' : 'offline'}`, 'info');
+    
+    calculateDayProgress();
+    updateCacheStatus();
+    
+    // Проверяем поддержку Service Worker
+    if ('serviceWorker' in navigator) {
+        navigator.serviceWorker.register('/MagicTraining/sw.js')
+            .then(registration => {
+                debug.log('Service Worker зарегистрирован', 'success');
+                console.log('ServiceWorker scope:', registration.scope);
+            })
+            .catch(error => {
+                debug.log(`Ошибка регистрации Service Worker: ${error.message}`, 'error');
+            });
+    }
+    
+    // Слушатели событий сети
+    window.addEventListener('online', () => {
+        debug.log('Сетевое соединение восстановлено', 'success');
+        showToast('📶 Соединение восстановлено');
+    });
+    
+    window.addEventListener('offline', () => {
+        debug.log('Сетевое соединение потеряно', 'warning');
+        showToast('⚠️ Работаем в офлайн-режиме');
+    });
+    
+    // Автоматическое кэширование при первом запуске
+    const firstRun = !localStorage.getItem('app_first_run');
+    if (firstRun && navigator.onLine) {
+        localStorage.setItem('app_first_run', 'true');
+        setTimeout(() => {
+            if (confirm('Хотите скачать все видео для офлайн-режима?')) {
+                precacheAllVideos();
+            }
+        }, 2000);
+    }
+}
+
+// Функции статистики (оставлены без изменений)
 function calculateDayProgress() {
     if (logs.length === 0) {
         updateProgressBars(0, 0, 0);
@@ -873,217 +1504,7 @@ function updateWeeklyGoal(volume) {
     }
 }
 
-// Показать экран
-function showScreen(id) {
-    document.querySelectorAll('.screen').forEach(s => s.classList.add('hidden'));
-    document.getElementById('screen-' + id).classList.remove('hidden');
-    
-    document.querySelectorAll('.nav-item').forEach(i => i.classList.remove('active'));
-    if(id === 'home') {
-        document.querySelectorAll('.nav-item')[0].classList.add('active');
-        setTimeout(calculateDayProgress, 50);
-    }
-    if(id === 'stats') { 
-        document.querySelectorAll('.nav-item')[1].classList.add('active'); 
-        renderStats(); 
-    }
-    
-    window.scrollTo(0, 0);
-}
-
-// Начать тренировку
-function startWorkout(dayIdx) {
-    curDay = program[dayIdx];
-    curExIdx = 0;
-    showScreen('exercise');
-    renderExercise();
-    showToast(`Начата ${curDay.day.split(':')[0]}`);
-}
-
-// Отрисовка упражнения
-function renderExercise() {
-    const ex = curDay.exercises[curExIdx];
-    const isLast = curExIdx === curDay.exercises.length - 1;
-    const progress = ((curExIdx + 1) / curDay.exercises.length * 100).toFixed(0);
-    
-    // Получаем правильный путь к видео
-    const videoPath = ex.video;
-    
-    let setsHtml = '';
-    for(let i = 1; i <= 4; i++) {
-        setsHtml += `<div class="set-row">
-            <div class="input-box">
-                <label><i class="fas fa-weight"></i> Вес (кг)</label>
-                <input type="number" 
-                       step="0.5" 
-                       id="w-${i}" 
-                       placeholder="0" 
-                       inputmode="decimal"
-                       pattern="[0-9]*"
-                       style="font-size: 16px; width: 100%;">
-            </div>
-            <div class="input-box">
-                <label><i class="fas fa-redo"></i> Повторы</label>
-                <input type="number" 
-                       id="r-${i}" 
-                       placeholder="0" 
-                       inputmode="numeric"
-                       pattern="[0-9]*"
-                       style="font-size: 16px; width: 100%;">
-            </div>
-        </div>`;
-    }
-
-    document.getElementById('ex-content').innerHTML = `
-        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px;">
-            <div>
-                <p style="color: var(--text-secondary); margin: 0; font-size: 14px;">${curDay.day}</p>
-                <h1 style="margin: 4px 0 0 0; font-size: 24px;">
-                    <i class="${ex.icon}" style="color: var(--primary); margin-right: 8px;"></i>
-                    ${ex.name}
-                </h1>
-            </div>
-            <div style="background: var(--primary); color: white; padding: 8px 12px; border-radius: 20px; font-weight: 600;">
-                ${curExIdx + 1}/${curDay.exercises.length}
-            </div>
-        </div>
-        
-        <div class="progress-container">
-            <div class="progress-bar" style="width: ${progress}%"></div>
-        </div>
-        
-        <div class="video-container">
-            <video playsinline loop controls preload="metadata" 
-                   src="${videoPath}"
-                   onerror="handleVideoError(this)"
-                   onloadeddata="showToast('Видео загружено')">
-            </video>
-        </div>
-        
-        <div class="card">
-            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
-                <h3 style="margin: 0;"><i class="fas fa-clipboard-list"></i> Техника выполнения</h3>
-                <span style="background: rgba(0,122,255,0.1); color: var(--primary); padding: 4px 10px; border-radius: 12px; font-size: 13px; font-weight: 600;">
-                    ${ex.volume}
-                </span>
-            </div>
-            <div class="tech-text">${ex.tech}</div>
-        </div>
-        
-        <div class="card">
-            <h3 style="margin-top: 0;"><i class="fas fa-edit"></i> Запись подхода</h3>
-            ${setsHtml}
-            <button onclick="saveEx()">
-                <i class="fas fa-save"></i> ${isLast ? 'ЗАВЕРШИТЬ ТРЕНИРОВКУ' : 'СОХРАНИТЬ И ДАЛЕЕ'}
-            </button>
-            <button class="btn-secondary" onclick="confirmExit()">
-                <i class="fas fa-times"></i> ВЫЙТИ БЕЗ СОХРАНЕНИЯ
-            </button>
-        </div>
-    `;
-    
-    setTimeout(() => {
-        const firstInput = document.getElementById('w-1');
-        if (firstInput) firstInput.focus();
-    }, 300);
-}
-
-// Обработка ошибок видео
-function handleVideoError(videoElement) {
-    videoElement.style.display = 'none';
-    const container = videoElement.parentElement;
-    container.innerHTML = `
-        <div style="padding: 60px 20px; text-align: center; color: #999; background: #f2f2f7; border-radius: 16px;">
-            <i class="fas fa-video-slash" style="font-size: 48px; margin-bottom: 16px; color: #c7c7cc;"></i>
-            <h3 style="margin: 0 0 8px 0; color: #666;">Видео недоступно</h3>
-            <p style="margin: 0; font-size: 14px;">Техника выполнения доступна в текстовом формате</p>
-        </div>
-    `;
-    showToast('Видео временно недоступно');
-}
-
-// Сохранить упражнение
-function saveEx() {
-    const ex = curDay.exercises[curExIdx];
-    const results = [];
-    
-    for(let i = 1; i <= 4; i++) {
-        const w = document.getElementById(`w-${i}`).value;
-        const r = document.getElementById(`r-${i}`).value;
-        if(w && r) {
-            results.push({
-                w: parseFloat(w),
-                r: parseInt(r),
-                volume: parseFloat(w) * parseInt(r)
-            });
-        }
-    }
-    
-    if(results.length > 0) {
-        logs.push({
-            t: Date.now(),
-            d: new Date().toLocaleDateString('ru-RU', { 
-                weekday: 'short', 
-                year: 'numeric', 
-                month: 'short', 
-                day: 'numeric' 
-            }),
-            n: ex.name,
-            s: results,
-            totalVolume: results.reduce((sum, s) => sum + s.volume, 0)
-        });
-        localStorage.setItem('magic_gym_logs', JSON.stringify(logs));
-        showToast(`Сохранено: ${ex.name}`);
-        
-        calculateDayProgress();
-    }
-    
-    if(curExIdx < curDay.exercises.length - 1) {
-        curExIdx++;
-        renderExercise();
-    } else {
-        const totalVolume = logs.slice(-curDay.exercises.length).reduce((sum, log) => sum + log.totalVolume, 0);
-        showToast(`Тренировка завершена! Тоннаж: ${totalVolume.toFixed(0)}кг`);
-        setTimeout(() => showScreen('home'), 1500);
-    }
-}
-
-// Подтверждение выхода
-function confirmExit() {
-    if (confirm('Вы уверены, что хотите выйти без сохранения прогресса?')) {
-        showScreen('home');
-    }
-}
-
-// Функция синхронизации
-function syncData() {
-    showToast('Данные обновлены');
-    calculateDayProgress();
-}
-
-// Показать уведомление
-function showToast(message) {
-    const toast = document.getElementById('toast');
-    toast.textContent = message;
-    toast.classList.add('show');
-    
-    setTimeout(() => {
-        toast.classList.remove('show');
-    }, 3000);
-}
-
-// Очистка старых логов
-function cleanupOldLogs() {
-    if (logs.length > MAX_LOG_ENTRIES) {
-        logs = logs.slice(logs.length - MAX_LOG_ENTRIES);
-        localStorage.setItem('magic_gym_logs', JSON.stringify(logs));
-    }
-}
-
-// Отрисовка статистики
 function renderStats() {
-    cleanupOldLogs();
-    
     const totalVolume = logs.reduce((sum, log) => sum + (log.totalVolume || 0), 0);
     document.getElementById('total-volume').textContent = `${totalVolume.toFixed(0)} кг`;
     
@@ -1135,7 +1556,6 @@ function renderStats() {
     }
 }
 
-// Удалить запись
 function deleteLog(index) {
     if (confirm('Удалить эту запись? Это действие нельзя отменить.')) {
         logs.splice(index, 1);
@@ -1146,7 +1566,6 @@ function deleteLog(index) {
     }
 }
 
-// Очистить историю
 function clearHistory() {
     if (confirm('Вы уверены, что хотите очистить всю историю тренировок?')) {
         logs = [];
@@ -1157,7 +1576,6 @@ function clearHistory() {
     }
 }
 
-// Инициализация графика
 function initChart() {
     const name = document.getElementById('chart-select').value;
     if (!name) return;
@@ -1259,73 +1677,8 @@ function initChart() {
     });
 }
 
-// Обработка нажатия клавиши Enter
-document.addEventListener('keydown', function(e) {
-    if (e.key === 'Enter' && !e.target.matches('input')) {
-        const btn = document.querySelector('#ex-content button');
-        if (btn) btn.click();
-    }
-});
-
-// Проверка сети
-let isOnline = navigator.onLine;
-
-window.addEventListener('online', () => {
-    isOnline = true;
-    showToast('📶 Соединение восстановлено');
-});
-
-window.addEventListener('offline', () => {
-    isOnline = false;
-    showToast('⚠️ Работаем в офлайн-режиме');
-});
-
-// Предотвращение масштабирования при двойном тапе
-let lastTouchEnd = 0;
-document.addEventListener('touchend', function(event) {
-    const now = (new Date()).getTime();
-    if (now - lastTouchEnd <= 300) {
-        event.preventDefault();
-    }
-    lastTouchEnd = now;
-}, false);
-
-// Инициализация приложения
-function initApp() {
-    // Логирование для отладки
-    console.log('Приложение инициализировано');
-    console.log('Текущий путь:', window.location.pathname);
-    console.log('PWA режим:', window.matchMedia('(display-mode: standalone)').matches);
-    console.log('Standalone:', window.navigator.standalone);
-    
-    calculateDayProgress();
-    
-    if (logs.length === 0) {
-        setTimeout(() => {
-            showToast('👋 Добро пожаловать! Начните первую тренировку');
-        }, 1000);
-    }
-}
-
-// Регистрация Service Worker
-if ('serviceWorker' in navigator) {
-    window.addEventListener('load', () => {
-        navigator.serviceWorker.register('/MagicTrainig/sw.js')
-            .then(registration => {
-                console.log('ServiceWorker зарегистрирован:', registration);
-            })
-            .catch(error => {
-                console.log('Ошибка регистрации ServiceWorker:', error);
-            });
-    });
-}
-
-// Запуск приложения при загрузке
+// Запуск приложения
 window.addEventListener('load', initApp);
 </script>
 </body>
 </html>
-
-
-
-
