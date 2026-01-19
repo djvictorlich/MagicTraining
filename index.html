@@ -536,8 +536,8 @@
                 <button onclick="syncData()" style="width: auto; padding: 8px 12px; background: rgba(0,122,255,0.1); color: var(--primary);">
                     <i class="fas fa-sync-alt"></i>
                 </button>
-                <button onclick="precacheAllVideos()" style="width: auto; padding: 8px 12px; background: rgba(52,199,89,0.1); color: var(--success);">
-                    <i class="fas fa-download"></i>
+                <button onclick="checkAllVideos()" style="width: auto; padding: 8px 12px; background: rgba(52,199,89,0.1); color: var(--success);">
+                    <i class="fas fa-check-circle"></i>
                 </button>
             </div>
         </div>
@@ -592,15 +592,16 @@
         </div>
         
         <div class="card">
-            <h3 style="margin-top: 0;"><i class="fas fa-video"></i> Управление видео</h3>
+            <h3 style="margin-top: 0;"><i class="fab fa-google-drive" style="color: #4285F4;"></i> Google Drive видео</h3>
             <p style="color: var(--text-secondary); margin-bottom: 15px;">
-                Статус кэша: <span id="cache-status">Проверка...</span>
+                Всего видео: 23 файла • <span id="video-count">23</span> настроено
             </p>
-            <button onclick="checkVideoCache()" class="btn-secondary" style="margin-bottom: 8px;">
-                <i class="fas fa-search"></i> Проверить кэш
+            <button onclick="checkAllVideos()" class="btn-secondary" style="margin-bottom: 8px;">
+                <i class="fas fa-check-circle"></i> Проверить все видео
             </button>
-            <button onclick="clearVideoCache()" style="background: rgba(255,59,48,0.1); color: var(--danger);">
-                <i class="fas fa-trash"></i> Очистить кэш видео
+            <button onclick="window.open('https://drive.google.com/drive/folders/1yKgdbct34JqWzQurmyf5QzCB_12-NZGZ', '_blank')" 
+                    style="background: rgba(66, 133, 244, 0.1); color: #4285F4;">
+                <i class="fab fa-google-drive"></i> Открыть все видео на Google Drive
             </button>
         </div>
     </div>
@@ -716,31 +717,37 @@ const debug = {
     }
 };
 
-// === ФУНКЦИИ ДЛЯ РАБОТЫ С ПУТЯМИ ===
-
-// Получение правильного пути к ресурсам
-function getAssetPath(filename) {
-    const isLocal = window.location.hostname === 'localhost' || 
-                    window.location.hostname === '127.0.0.1' ||
-                    window.location.protocol === 'file:';
+// === ВСЕ 23 ВИДЕО НА GOOGLE DRIVE ===
+const GOOGLE_DRIVE_IDS = {
+    // === ДЕНЬ 1: Грудь + Спина + Кор ===
+    'v1_1.mp4': '1yKgdbct34JqWzQurmyf5QzCB_12-NZGZ',
+    'v1_2.mp4': '1Il_CErVNAc4yafKH0L40DaPB8E8syIc7',
+    'v1_3.mp4': '1Kv40lU-0CIkCcFVe5ysKx7uVMCRdF-7c',
+    'v1_4.mp4': '1ixCcXgQyTjD1D-tJs9yaaOLYjLUx8TnN',
+    'v1_5.mp4': '1rgCfk0AxIlnUTgWtTsZEKVhvgZhOfQ-E',
+    'v1_6.mp4': '1fshuv4jB807YShc50YOXm2xGgTqob3VD',
+    'v1_7.mp4': '1VjPCbKhBf2VHGPs9MfMB-FepB9LXSUl_',
     
-    const isGitHub = window.location.hostname.includes('github.io');
+    // === ДЕНЬ 2: Ноги + Кор ===
+    'v2_1.mp4': '1YlZnZbRpX59EuaHEHKmJSMwr4L65BiRA',
+    'v2_2.mp4': '1jPBljZv_4DSrLqAFH8AUyVUWKh-K7UkV',
+    'v2_3.mp4': '1EjAUQT-NJ3C0p4D-cm9RvW-svbCBOOm5',
+    'v2_4.mp4': '14XzIsdeZH0bPy04Idpiy_waOcIJIyGD4',
+    'v2_5.mp4': '18g48vEKgzqP9h5QCPkB_VhgLmwrg_LIK',
+    'v2_6.mp4': '1oKYZwaBTZBl3ENoHrzBMPvyg_aKmNyqh',
+    'v2_7.mp4': '1IxzEEbulyvji4ccCrVHUKqVMcUg7cgaQ',
     
-    if (isLocal) {
-        debug.log(`Локальный путь: video/${filename}`, 'info');
-        return `video/${filename}`;
-    }
-    
-    if (isGitHub) {
-        const path = `/${REPO_NAME}/video/${filename}`;
-        debug.log(`GitHub Pages путь: ${path}`, 'info');
-        return path;
-    }
-    
-    // По умолчанию относительный путь
-    debug.log(`Относительный путь: video/${filename}`, 'info');
-    return `video/${filename}`;
-}
+    // === ДЕНЬ 3: Плечи + Руки + Кор ===
+    'v3_1.mp4': '1Fi01SNHo5i4gkufbYwxgSGYRz6zKH46j',
+    'v3_2.mp4': '1nh7eUGeX9F4OVLUhWESUfR3diepZH_h8',
+    'v3_3.mp4': '1wuwEOH54NXooGVK_R2aPF-wW1f2MtU5C',
+    'v3_4.mp4': '1FfFD0JQQ94q1OT7nH4NaK-gFhpW_iby-',
+    'v3_5.mp4': '1rNpoj4i0noGFgVZIQo-xDHMdutTvKyoF',
+    'v3_6.mp4': '1j8V31hAWTG06KsbbOchgkOrum6zprAqv',
+    'v3_7.mp4': '1gyIlE5yEy_ucwota_Lmi3xVxUz4u51mx',
+    'v3_8.mp4': '1TQ16rfUVPnS5k83tN204QeFTLY_g_3V-',
+    'v3_9.mp4': '1UUQFtpTA8ovPcKIEKxLRRa57-ay3KD6k'
+};
 
 // === ТРЕНИРОВОЧНАЯ ПРОГРАММА ===
 const program = [
@@ -803,7 +810,7 @@ const program = [
         exercises: [
             { 
                 name: "Разгибание ног в тренажере", 
-                tech: "✅ Коленный сустав строго напротив оси вращения тренажера.\n✅ На выдохе полностью выпрямите ноги. В верхней точке задержитесь на 1-2 секунды.\n✅ Медленно опустите.", 
+                tech: "✅ Коленный сустав строго напротив оси вращения тренажера.\n✅ На выдохе полностью выпрямите ноги. В верхней точка задержитесь на 1-2 секунды.\n✅ Медленно опустите.", 
                 volume: "3 подхода по 15 повторений", 
                 video: "v2_1.mp4",
                 icon: "fas fa-angle-up"
@@ -928,6 +935,121 @@ let curExIdx = 0;
 let logs = JSON.parse(localStorage.getItem('magic_gym_logs')) || [];
 let chartObj = null;
 
+// === ОСНОВНЫЕ ФУНКЦИИ ДЛЯ GOOGLE DRIVE ВИДЕО ===
+
+// Получение ссылки на видео с Google Drive
+function getAssetPath(filename) {
+    const fileId = GOOGLE_DRIVE_IDS[filename];
+    
+    if (!fileId) {
+        debug.log(`❌ Нет ID для файла: ${filename}`, 'error');
+        return getFallbackUrl(filename);
+    }
+    
+    // Используем embed ссылку для встраивания
+    const embedUrl = `https://drive.google.com/file/d/${fileId}/preview`;
+    
+    debug.log(`✅ Google Drive: ${filename} → ${fileId}`, 'success');
+    return embedUrl;
+}
+
+// Фолбэк URL если что-то пошло не так
+function getFallbackUrl(filename) {
+    // Локальный путь (для разработки)
+    if (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1') {
+        return `video/${filename}`;
+    }
+    
+    // Прямая ссылка для скачивания (резерв)
+    const fileId = GOOGLE_DRIVE_IDS[filename];
+    if (fileId) {
+        return `https://drive.google.com/uc?export=download&id=${fileId}`;
+    }
+    
+    // Последний фолбэк
+    return `#video-error-${filename}`;
+}
+
+// Проверка всех видео на Google Drive
+async function checkAllVideos() {
+    showToast('🔍 Проверяем все видео...');
+    debug.log('Начинаем проверку всех видео на Google Drive', 'info');
+    
+    const totalVideos = Object.keys(GOOGLE_DRIVE_IDS).length;
+    let availableCount = 0;
+    const results = [];
+    
+    // Обновляем счетчик видео
+    document.getElementById('video-count').textContent = totalVideos;
+    
+    for (const [filename, fileId] of Object.entries(GOOGLE_DRIVE_IDS)) {
+        const testUrl = `https://drive.google.com/file/d/${fileId}/preview`;
+        
+        try {
+            // Пытаемся загрузить iframe для проверки
+            const iframe = document.createElement('iframe');
+            iframe.style.display = 'none';
+            iframe.src = testUrl;
+            
+            await new Promise((resolve) => {
+                iframe.onload = () => {
+                    availableCount++;
+                    results.push({ filename, fileId, available: true });
+                    debug.log(`   ${filename}: ✅ Доступно`, 'success');
+                    resolve();
+                };
+                
+                iframe.onerror = () => {
+                    results.push({ filename, fileId, available: false });
+                    debug.log(`   ${filename}: ❌ Ошибка загрузки`, 'error');
+                    resolve();
+                };
+                
+                document.body.appendChild(iframe);
+                setTimeout(() => {
+                    document.body.removeChild(iframe);
+                    resolve();
+                }, 3000);
+            });
+            
+        } catch (error) {
+            results.push({ filename, fileId, available: false, error: error.message });
+            debug.log(`   ${filename}: ❌ ${error.message}`, 'error');
+        }
+        
+        // Пауза между запросами
+        await new Promise(resolve => setTimeout(resolve, 500));
+    }
+    
+    const message = `Проверка завершена: ${availableCount}/${totalVideos} видео доступны`;
+    showToast(message);
+    
+    if (availableCount === totalVideos) {
+        debug.log(`🎉 Все ${totalVideos} видео доступны!`, 'success');
+    } else {
+        debug.log(`⚠️ Только ${availableCount} из ${totalVideos} видео доступны`, 'warning');
+        
+        // Показываем проблемные видео
+        const unavailable = results.filter(r => !r.available);
+        unavailable.forEach(video => {
+            debug.log(`   Проблема: ${video.filename} (ID: ${video.fileId})`, 'error');
+        });
+    }
+    
+    return results;
+}
+
+// Открыть видео в новой вкладке на Google Drive
+function openVideoInNewTab(filename) {
+    const fileId = GOOGLE_DRIVE_IDS[filename];
+    if (fileId) {
+        const url = `https://drive.google.com/file/d/${fileId}/view`;
+        window.open(url, '_blank');
+        debug.log(`Открываем видео: ${filename}`, 'info');
+        showToast('Открываем видео в новой вкладке');
+    }
+}
+
 // === ОСНОВНЫЕ ФУНКЦИИ ПРИЛОЖЕНИЯ ===
 
 // Показать/скрыть экран
@@ -939,7 +1061,6 @@ function showScreen(id) {
     if(id === 'home') {
         document.querySelectorAll('.nav-item')[0].classList.add('active');
         setTimeout(calculateDayProgress, 50);
-        updateCacheStatus();
     }
     if(id === 'stats') { 
         document.querySelectorAll('.nav-item')[1].classList.add('active'); 
@@ -958,15 +1079,16 @@ function startWorkout(dayIdx) {
     showToast(`Начата ${curDay.day.split(':')[0]}`);
 }
 
-// Отрисовка упражнения
+// Отрисовка упражнения с Google Drive видео
 function renderExercise() {
     const ex = curDay.exercises[curExIdx];
     const isLast = curExIdx === curDay.exercises.length - 1;
     const progress = ((curExIdx + 1) / curDay.exercises.length * 100).toFixed(0);
     
-    const videoPath = getAssetPath(ex.video);
-    debug.log(`Загрузка видео: ${ex.video}`, 'info');
-    debug.log(`Полный путь: ${videoPath}`, 'info');
+    const videoUrl = getAssetPath(ex.video);
+    const fileId = GOOGLE_DRIVE_IDS[ex.video];
+    
+    debug.log(`📹 Загружаем видео: ${ex.video} (ID: ${fileId})`, 'info');
     
     let setsHtml = '';
     for(let i = 1; i <= 4; i++) {
@@ -1012,13 +1134,23 @@ function renderExercise() {
         </div>
         
         <div class="video-container">
-            <video id="exercise-video" playsinline loop controls preload="metadata" 
-                   style="width: 100%; height: 100%;"
-                   onerror="handleVideoError(this, '${videoPath}')"
-                   onloadeddata="handleVideoLoaded(this)">
-                <source src="${videoPath}" type="video/mp4">
-                Ваш браузер не поддерживает видео.
-            </video>
+            <iframe 
+                id="exercise-video"
+                src="${videoUrl}"
+                frameborder="0" 
+                allow="autoplay; encrypted-media; fullscreen" 
+                allowfullscreen
+                style="width: 100%; height: 100%; border-radius: 16px;"
+                onload="handleVideoLoaded(this)"
+                onerror="handleVideoError('${ex.video}')">
+            </iframe>
+        </div>
+        
+        <div style="text-align: center; margin: 10px 0;">
+            <button onclick="openVideoInNewTab('${ex.video}')" 
+                    style="background: rgba(66, 133, 244, 0.1); color: #4285F4; padding: 8px 16px; border-radius: 20px; border: none; font-size: 14px; cursor: pointer;">
+                <i class="fab fa-google-drive"></i> Открыть в Google Drive
+            </button>
         </div>
         
         <div class="card">
@@ -1043,267 +1175,46 @@ function renderExercise() {
         </div>
     `;
     
-    // Пробуем загрузить видео из кэша
-    loadVideoFromCache(videoPath).then(cached => {
-        if (!cached) {
-            debug.log(`Видео не найдено в кэше: ${ex.video}`, 'warning');
-        }
-    });
-    
     setTimeout(() => {
         const firstInput = document.getElementById('w-1');
         if (firstInput) firstInput.focus();
     }, 300);
 }
 
-// Обработка загрузки видео
-function handleVideoLoaded(videoElement) {
-    debug.log(`Видео загружено успешно: ${videoElement.src}`, 'success');
+// Обработка загрузки iframe
+function handleVideoLoaded(iframeElement) {
+    debug.log(`✅ Видео iframe загружено: ${iframeElement.src}`, 'success');
     showToast('Видео загружено');
-    
-    // Сохраняем в кэш при успешной загрузке
-    cacheVideo(videoElement.src).then(() => {
-        debug.log(`Видео сохранено в кэш: ${videoElement.src}`, 'info');
-    });
 }
 
-// Обработка ошибки видео с детальной информацией
-function handleVideoError(videoElement, videoPath) {
-    const errorDetails = {
-        videoPath: videoPath,
-        videoElementSrc: videoElement.src,
-        networkStatus: navigator.onLine ? 'online' : 'offline',
-        timestamp: new Date().toISOString(),
-        errorCode: videoElement.error ? videoElement.error.code : 'unknown',
-        errorMessage: videoElement.error ? videoElement.error.message : 'Нет деталей ошибки'
-    };
+// Обработка ошибок iframe
+function handleVideoError(filename) {
+    const fileId = GOOGLE_DRIVE_IDS[filename];
     
-    debug.log(`ОШИБКА ВИДЕО: ${JSON.stringify(errorDetails, null, 2)}`, 'error');
+    debug.log(`❌ Ошибка загрузки видео: ${filename} (ID: ${fileId})`, 'error');
+    showToast('Ошибка загрузки видео. Пробуем альтернативный источник...');
     
-    // Показываем подробную информацию пользователю
-    videoElement.style.display = 'none';
-    const container = videoElement.parentElement;
+    // Пробуем альтернативные форматы
+    const alternativeUrls = [
+        `https://drive.google.com/file/d/${fileId}/view`,
+        `https://drive.google.com/uc?export=view&id=${fileId}`,
+        `https://drive.google.com/uc?export=download&id=${fileId}`
+    ];
     
-    container.innerHTML = `
-        <div class="video-placeholder">
-            <i class="fas fa-video-slash" style="font-size: 48px; margin-bottom: 16px;"></i>
-            <h3 style="margin: 0 0 8px 0; color: white;">Ошибка загрузки видео</h3>
-            <p style="margin: 0 0 4px 0; font-size: 14px; opacity: 0.9;">Файл: ${videoPath.split('/').pop()}</p>
-            <p style="margin: 0 0 4px 0; font-size: 14px; opacity: 0.9;">Статус сети: ${errorDetails.networkStatus}</p>
-            <p style="margin: 0 0 12px 0; font-size: 14px; opacity: 0.9;">${errorDetails.errorMessage}</p>
-            <button onclick="retryVideoLoad('${videoPath}')" style="background: white; color: #667eea; padding: 8px 16px; border-radius: 20px; border: none; font-weight: 600;">
-                <i class="fas fa-redo"></i> Повторить загрузку
-            </button>
-        </div>
-    `;
-    
-    showToast('Ошибка загрузки видео');
-}
-
-// Повторная попытка загрузки видео
-function retryVideoLoad(videoPath) {
-    debug.log(`Повторная загрузка видео: ${videoPath}`, 'info');
-    
-    const container = document.querySelector('.video-placeholder');
-    if (container) {
-        container.innerHTML = `
-            <div style="text-align: center;">
-                <i class="fas fa-spinner fa-spin" style="font-size: 36px; margin-bottom: 16px;"></i>
-                <p>Загружаем видео...</p>
-            </div>
-        `;
-    }
-    
-    // Пробуем загрузить из кэша
-    loadVideoFromCache(videoPath).then(cached => {
-        if (cached) {
-            debug.log(`Видео загружено из кэша: ${videoPath}`, 'success');
-            location.reload(); // Перезагружаем страницу для отображения видео
-        } else {
-            // Пробуем прямую загрузку
-            const videoElement = document.createElement('video');
-            videoElement.oncanplay = function() {
-                debug.log(`Прямая загрузка успешна: ${videoPath}`, 'success');
-                location.reload();
-            };
-            videoElement.onerror = function() {
-                debug.log(`Прямая загрузка тоже не удалась: ${videoPath}`, 'error');
-                showToast('Видео недоступно. Используйте текстовую инструкцию.');
-            };
-            videoElement.src = videoPath;
-            videoElement.load();
-        }
-    });
-}
-
-// === ФУНКЦИИ ДЛЯ РАБОТЫ С КЭШЕМ ===
-
-// Кэширование видео
-async function cacheVideo(url) {
-    try {
-        const cache = await caches.open(VIDEO_CACHE_NAME);
-        const response = await fetch(url);
-        if (response.ok) {
-            await cache.put(url, response);
-            debug.log(`Видео закэшировано: ${url}`, 'success');
-            return true;
-        }
-    } catch (error) {
-        debug.log(`Ошибка кэширования видео ${url}: ${error.message}`, 'error');
-    }
-    return false;
-}
-
-// Загрузка видео из кэша
-async function loadVideoFromCache(url) {
-    try {
-        const cache = await caches.open(VIDEO_CACHE_NAME);
-        const response = await cache.match(url);
-        if (response) {
-            debug.log(`Видео найдено в кэше: ${url}`, 'success');
-            return response;
-        }
-    } catch (error) {
-        debug.log(`Ошибка загрузки из кэша ${url}: ${error.message}`, 'error');
-    }
-    return null;
-}
-
-// Предварительное кэширование всех видео
-async function precacheAllVideos() {
-    showToast('Начинаем кэширование видео...');
-    debug.log('Начато предварительное кэширование всех видео', 'info');
-    
-    const videoFiles = [];
-    program.forEach(day => {
-        day.exercises.forEach(ex => {
-            if (ex.video && !videoFiles.includes(ex.video)) {
-                videoFiles.push(ex.video);
-            }
-        });
-    });
-    
-    debug.log(`Всего видео для кэширования: ${videoFiles.length}`, 'info');
-    
-    let successCount = 0;
-    let failCount = 0;
-    
-    for (let i = 0; i < videoFiles.length; i++) {
-        const videoFile = videoFiles[i];
-        const videoPath = getAssetPath(videoFile);
+    // Обновляем iframe с альтернативным источником
+    const iframe = document.getElementById('exercise-video');
+    if (iframe) {
+        const currentSrc = iframe.src;
+        let currentIndex = alternativeUrls.findIndex(url => url === currentSrc);
         
-        showToast(`Кэшируем видео ${i+1}/${videoFiles.length}...`);
-        debug.log(`Кэшируем: ${videoFile} (${videoPath})`, 'info');
+        if (currentIndex === -1) currentIndex = 0;
         
-        try {
-            const cached = await cacheVideo(videoPath);
-            if (cached) {
-                successCount++;
-                debug.log(`✅ Успешно: ${videoFile}`, 'success');
-            } else {
-                failCount++;
-                debug.log(`❌ Ошибка: ${videoFile}`, 'error');
-            }
-        } catch (error) {
-            failCount++;
-            debug.log(`❌ Исключение: ${videoFile} - ${error.message}`, 'error');
-        }
+        const nextIndex = (currentIndex + 1) % alternativeUrls.length;
+        iframe.src = alternativeUrls[nextIndex];
         
-        // Небольшая пауза между запросами
-        await new Promise(resolve => setTimeout(resolve, 100));
-    }
-    
-    const message = `Кэширование завершено: ${successCount} успешно, ${failCount} с ошибками`;
-    showToast(message);
-    debug.log(message, successCount > 0 ? 'success' : 'error');
-    
-    updateCacheStatus();
-}
-
-// Проверка статуса кэша
-async function checkVideoCache() {
-    debug.log('Проверка состояния кэша видео...', 'info');
-    
-    try {
-        const cache = await caches.open(VIDEO_CACHE_NAME);
-        const keys = await cache.keys();
-        
-        const videoFiles = [];
-        program.forEach(day => {
-            day.exercises.forEach(ex => {
-                if (ex.video) videoFiles.push(ex.video);
-            });
-        });
-        
-        const cachedFiles = keys.map(key => key.url.split('/').pop());
-        const missingFiles = videoFiles.filter(file => !cachedFiles.includes(file));
-        
-        debug.log(`Всего видео в программе: ${videoFiles.length}`, 'info');
-        debug.log(`В кэше найдено: ${cachedFiles.length}`, 'info');
-        debug.log(`Отсутствуют в кэше: ${missingFiles.length}`, 
-                 missingFiles.length > 0 ? 'warning' : 'success');
-        
-        if (missingFiles.length > 0) {
-            debug.log(`Отсутствующие файлы: ${missingFiles.join(', ')}`, 'warning');
-        }
-        
-        const statusText = `${cachedFiles.length}/${videoFiles.length} видео в кэше`;
-        document.getElementById('cache-status').textContent = statusText;
-        
-        showToast(`Кэш: ${cachedFiles.length}/${videoFiles.length} видео`);
-        
-    } catch (error) {
-        debug.log(`Ошибка проверки кэша: ${error.message}`, 'error');
-        document.getElementById('cache-status').textContent = 'Ошибка проверки';
+        debug.log(`🔄 Пробуем альтернативную ссылку: ${alternativeUrls[nextIndex]}`, 'info');
     }
 }
-
-// Очистка кэша видео
-async function clearVideoCache() {
-    if (confirm('Вы уверены, что хотите очистить кэш видео? Это удалит все скачанные видео.')) {
-        try {
-            const deleted = await caches.delete(VIDEO_CACHE_NAME);
-            if (deleted) {
-                debug.log('Кэш видео успешно очищен', 'success');
-                showToast('Кэш видео очищен');
-                updateCacheStatus();
-            } else {
-                debug.log('Кэш видео не найден', 'info');
-                showToast('Кэш видео не найден');
-            }
-        } catch (error) {
-            debug.log(`Ошибка очистки кэша: ${error.message}`, 'error');
-            showToast('Ошибка очистки кэша');
-        }
-    }
-}
-
-// Обновление статуса кэша
-async function updateCacheStatus() {
-    try {
-        const cache = await caches.open(VIDEO_CACHE_NAME);
-        const keys = await cache.keys();
-        const videoFiles = [];
-        program.forEach(day => {
-            day.exercises.forEach(ex => {
-                if (ex.video) videoFiles.push(ex.video);
-            });
-        });
-        
-        const statusText = `${keys.length}/${videoFiles.length} видео в кэше`;
-        const statusElement = document.getElementById('cache-status');
-        if (statusElement) {
-            statusElement.textContent = statusText;
-        }
-    } catch (error) {
-        const statusElement = document.getElementById('cache-status');
-        if (statusElement) {
-            statusElement.textContent = 'Ошибка проверки';
-        }
-    }
-}
-
-// === ОСТАЛЬНЫЕ ФУНКЦИИ ===
 
 // Сохранение упражнения
 function saveEx() {
@@ -1362,7 +1273,11 @@ function confirmExit() {
 function syncData() {
     showToast('Данные обновлены');
     calculateDayProgress();
-    updateCacheStatus();
+}
+
+// Управление панелью отладки
+function toggleDebugPanel() {
+    debug.toggle();
 }
 
 // Уведомления
@@ -1376,57 +1291,7 @@ function showToast(message) {
     }, 3000);
 }
 
-// Управление панелью отладки
-function toggleDebugPanel() {
-    debug.toggle();
-}
-
-// Инициализация приложения
-function initApp() {
-    debug.log('Приложение инициализировано', 'info');
-    debug.log(`URL: ${window.location.href}`, 'info');
-    debug.log(`Режим PWA: ${window.matchMedia('(display-mode: standalone)').matches}`, 'info');
-    debug.log(`Сеть: ${navigator.onLine ? 'online' : 'offline'}`, 'info');
-    
-    calculateDayProgress();
-    updateCacheStatus();
-    
-    // Проверяем поддержку Service Worker
-    if ('serviceWorker' in navigator) {
-        navigator.serviceWorker.register('/MagicTraining/sw.js')
-            .then(registration => {
-                debug.log('Service Worker зарегистрирован', 'success');
-                console.log('ServiceWorker scope:', registration.scope);
-            })
-            .catch(error => {
-                debug.log(`Ошибка регистрации Service Worker: ${error.message}`, 'error');
-            });
-    }
-    
-    // Слушатели событий сети
-    window.addEventListener('online', () => {
-        debug.log('Сетевое соединение восстановлено', 'success');
-        showToast('📶 Соединение восстановлено');
-    });
-    
-    window.addEventListener('offline', () => {
-        debug.log('Сетевое соединение потеряно', 'warning');
-        showToast('⚠️ Работаем в офлайн-режиме');
-    });
-    
-    // Автоматическое кэширование при первом запуске
-    const firstRun = !localStorage.getItem('app_first_run');
-    if (firstRun && navigator.onLine) {
-        localStorage.setItem('app_first_run', 'true');
-        setTimeout(() => {
-            if (confirm('Хотите скачать все видео для офлайн-режима?')) {
-                precacheAllVideos();
-            }
-        }, 2000);
-    }
-}
-
-// Функции статистики (оставлены без изменений)
+// Функция для расчета прогресса по дням
 function calculateDayProgress() {
     if (logs.length === 0) {
         updateProgressBars(0, 0, 0);
@@ -1504,6 +1369,7 @@ function updateWeeklyGoal(volume) {
     }
 }
 
+// Отрисовка статистики
 function renderStats() {
     const totalVolume = logs.reduce((sum, log) => sum + (log.totalVolume || 0), 0);
     document.getElementById('total-volume').textContent = `${totalVolume.toFixed(0)} кг`;
@@ -1556,6 +1422,7 @@ function renderStats() {
     }
 }
 
+// Удалить запись
 function deleteLog(index) {
     if (confirm('Удалить эту запись? Это действие нельзя отменить.')) {
         logs.splice(index, 1);
@@ -1566,6 +1433,7 @@ function deleteLog(index) {
     }
 }
 
+// Очистить историю
 function clearHistory() {
     if (confirm('Вы уверены, что хотите очистить всю историю тренировок?')) {
         logs = [];
@@ -1576,6 +1444,7 @@ function clearHistory() {
     }
 }
 
+// Инициализация графика
 function initChart() {
     const name = document.getElementById('chart-select').value;
     if (!name) return;
@@ -1677,7 +1546,57 @@ function initChart() {
     });
 }
 
-// Запуск приложения
+// Инициализация приложения
+function initApp() {
+    debug.log('🚀 Приложение Magic Training запущено', 'info');
+    debug.log(`🌐 URL: ${window.location.href}`, 'info');
+    debug.log(`🔗 Всего видео настроено: ${Object.keys(GOOGLE_DRIVE_IDS).length}`, 'success');
+    debug.log(`📊 Тренировочных записей: ${logs.length}`, 'info');
+    
+    // Обновляем счетчик видео
+    document.getElementById('video-count').textContent = Object.keys(GOOGLE_DRIVE_IDS).length;
+    
+    calculateDayProgress();
+    
+    // Регистрация Service Worker
+    if ('serviceWorker' in navigator) {
+        navigator.serviceWorker.register('/MagicTraining/sw.js')
+            .then(registration => {
+                debug.log('✅ Service Worker зарегистрирован', 'success');
+            })
+            .catch(error => {
+                debug.log(`❌ Ошибка Service Worker: ${error.message}`, 'error');
+            });
+    }
+    
+    // Слушатели событий сети
+    window.addEventListener('online', () => {
+        debug.log('📶 Сетевое соединение восстановлено', 'success');
+        showToast('Соединение восстановлено');
+    });
+    
+    window.addEventListener('offline', () => {
+        debug.log('⚠️ Сетевое соединение потеряно', 'warning');
+        showToast('Работаем в офлайн-режиме');
+    });
+    
+    // Приветственное сообщение
+    setTimeout(() => {
+        if (logs.length === 0) {
+            showToast('👋 Добро пожаловать! Начните первую тренировку');
+        }
+    }, 1000);
+}
+
+// Обработка нажатия клавиши Enter
+document.addEventListener('keydown', function(e) {
+    if (e.key === 'Enter' && !e.target.matches('input')) {
+        const btn = document.querySelector('#ex-content button');
+        if (btn) btn.click();
+    }
+});
+
+// Запуск приложения при загрузке
 window.addEventListener('load', initApp);
 </script>
 </body>
