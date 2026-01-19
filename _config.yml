@@ -1,3 +1,0 @@
-# _config.yml
-include: [".nojekyll"]
-exclude: ["404.html"]
