@@ -156,10 +156,33 @@
             box-shadow: 0 8px 25px rgba(0,0,0,0.15);
         }
         
-        video {
+        .video-overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
             width: 100%;
             height: 100%;
-            object-fit: cover;
+            background: rgba(0,0,0,0.7);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            text-align: center;
+            padding: 20px;
+            z-index: 10;
+            transition: opacity 0.3s ease;
+        }
+        
+        .video-overlay.hidden {
+            opacity: 0;
+            pointer-events: none;
+        }
+        
+        iframe {
+            width: 100%;
+            height: 100%;
+            border: none;
             display: block;
         }
         
@@ -451,44 +474,6 @@
                 font-size: 16px;
                 padding: 12px;
             }
-        }
-        
-        /* Загрузка видео */
-        .video-loading {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            height: 100%;
-            color: white;
-            text-align: center;
-            padding: 20px;
-            background: rgba(0,0,0,0.8);
-        }
-        
-        .video-error {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            height: 100%;
-            color: white;
-            text-align: center;
-            padding: 20px;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-        }
-        
-        .cache-badge {
-            position: absolute;
-            top: 10px;
-            right: 10px;
-            background: rgba(52, 199, 89, 0.9);
-            color: white;
-            padding: 4px 8px;
-            border-radius: 12px;
-            font-size: 11px;
-            font-weight: 600;
-            z-index: 10;
         }
     </style>
 </head>
@@ -831,8 +816,8 @@ function getVideoUrl(filename) {
     const fileId = GOOGLE_DRIVE_IDS[filename];
     if (!fileId) return null;
     
-    // Прямая ссылка для скачивания с Google Drive
-    return `https://drive.google.com/uc?export=download&id=${fileId}`;
+    // Без автовоспроизведения - просто preview ссылка
+    return `https://drive.google.com/file/d/${fileId}/preview`;
 }
 
 // === ОСНОВНЫЕ ФУНКЦИИ ===
@@ -916,18 +901,26 @@ function renderExercise() {
             <div class="progress-bar" style="width: ${progress}%"></div>
         </div>
         
-        <div class="video-container">
-            <div class="video-error">
-                <i class="fas fa-video" style="font-size: 48px; margin-bottom: 16px;"></i>
-                <h3 style="margin: 0 0 8px 0;">Видео в приложении</h3>
+        <div class="video-container" id="video-container">
+            <div class="video-overlay" id="video-overlay">
+                <i class="fas fa-play-circle" style="font-size: 48px; margin-bottom: 16px;"></i>
+                <h3 style="margin: 0 0 8px 0;">Видео упражнения</h3>
                 <p style="margin: 0 0 16px 0; font-size: 14px; opacity: 0.9;">
-                    Нажмите кнопку ниже, чтобы посмотреть видео
+                    Нажмите кнопку для загрузки видео
                 </p>
-                <button onclick="window.open('${driveViewUrl}', '_blank')" 
+                <button onclick="loadVideo()" 
                         style="background: #4285F4; color: white; padding: 12px 24px; border-radius: 20px; border: none; font-size: 16px; font-weight: 600; cursor: pointer;">
-                    <i class="fab fa-google-drive"></i> Смотреть видео в Google Drive
+                    <i class="fas fa-play"></i> Загрузить и воспроизвести видео
                 </button>
+                <p style="margin-top: 12px; font-size: 12px; opacity: 0.7;">
+                    Или <a href="${driveViewUrl}" target="_blank" style="color: #FFCC00;">открыть в Google Drive</a>
+                </p>
             </div>
+            <iframe id="video-frame" 
+                    style="width: 100%; height: 100%; border: none; display: none;"
+                    allow="autoplay; encrypted-media; fullscreen"
+                    allowfullscreen>
+            </iframe>
         </div>
         
         <div class="card">
@@ -956,6 +949,53 @@ function renderExercise() {
         const firstInput = document.getElementById('w-1');
         if (firstInput) firstInput.focus();
     }, 300);
+}
+
+// Загрузка видео по требованию
+function loadVideo() {
+    const ex = curDay.exercises[curExIdx];
+    const videoUrl = getVideoUrl(ex.video);
+    
+    const overlay = document.getElementById('video-overlay');
+    const iframe = document.getElementById('video-frame');
+    
+    if (videoUrl && iframe) {
+        // Показываем загрузку
+        overlay.innerHTML = `
+            <i class="fas fa-spinner fa-spin" style="font-size: 48px; margin-bottom: 16px;"></i>
+            <p>Загружаем видео...</p>
+        `;
+        
+        // Устанавливаем источник iframe
+        iframe.src = videoUrl;
+        iframe.style.display = 'block';
+        
+        // Скрываем оверлей после загрузки iframe
+        iframe.onload = function() {
+            setTimeout(() => {
+                overlay.classList.add('hidden');
+                showToast('Видео загружено');
+            }, 500);
+        };
+        
+        // Обработка ошибок
+        iframe.onerror = function() {
+            overlay.innerHTML = `
+                <i class="fas fa-exclamation-triangle" style="font-size: 48px; margin-bottom: 16px; color: #ff9500;"></i>
+                <h3 style="margin: 0 0 8px 0;">Ошибка загрузки</h3>
+                <p style="margin: 0 0 16px 0; font-size: 14px; opacity: 0.9;">
+                    Не удалось загрузить видео
+                </p>
+                <button onclick="window.open('https://drive.google.com/file/d/${GOOGLE_DRIVE_IDS[ex.video]}/view', '_blank')" 
+                        style="background: #4285F4; color: white; padding: 12px 24px; border-radius: 20px; border: none; font-size: 16px; font-weight: 600; cursor: pointer;">
+                    <i class="fab fa-google-drive"></i> Открыть в Google Drive
+                </button>
+            `;
+            iframe.style.display = 'none';
+            overlay.classList.remove('hidden');
+            showToast('Ошибка загрузки видео');
+        };
+    }
 }
 
 // Сохранение упражнения
