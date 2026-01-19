@@ -1,8 +1,10 @@
 const CACHE_NAME = 'gym-pro-v1.0';
+const BASE_PATH = '/gym-pwa/';
 const urlsToCache = [
-  './',
-  './index.html',
-  './manifest.json',
+  BASE_PATH,
+  BASE_PATH + 'index.html',
+  BASE_PATH + 'manifest.json',
+  BASE_PATH + '404.html',
   'https://cdn.jsdelivr.net/npm/chart.js',
   'https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css'
 ];
@@ -37,10 +39,8 @@ self.addEventListener('activate', event => {
 
 // Перехват запросов
 self.addEventListener('fetch', event => {
-  // Пропускаем запросы к сторонним ресурсам
-  if (!event.request.url.startsWith(self.location.origin)) {
-    return;
-  }
+  // Для GitHub Pages учитываем BASE_PATH
+  const requestUrl = new URL(event.request.url);
   
   event.respondWith(
     caches.match(event.request)
@@ -48,6 +48,17 @@ self.addEventListener('fetch', event => {
         // Возвращаем кэшированный ответ, если он есть
         if (cachedResponse) {
           return cachedResponse;
+        }
+        
+        // Для навигационных запросов возвращаем index.html
+        if (event.request.mode === 'navigate') {
+          return caches.match(BASE_PATH + 'index.html')
+            .then(response => {
+              if (response) {
+                return response;
+              }
+              return fetch(event.request);
+            });
         }
         
         // Иначе делаем сетевой запрос
@@ -58,7 +69,7 @@ self.addEventListener('fetch', event => {
               return response;
             }
             
-            // Клонируем ответ, т.к. он может быть использован только один раз
+            // Клонируем ответ
             const responseToCache = response.clone();
             
             caches.open(CACHE_NAME)
@@ -69,9 +80,9 @@ self.addEventListener('fetch', event => {
             return response;
           })
           .catch(() => {
-            // Если сеть недоступна, показываем fallback
-            if (event.request.mode === 'navigate') {
-              return caches.match('./index.html');
+            // Если сеть недоступна и это HTML, показываем index.html
+            if (event.request.headers.get('accept').includes('text/html')) {
+              return caches.match(BASE_PATH + 'index.html');
             }
           });
       })
