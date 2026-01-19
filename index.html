@@ -3,195 +3,1160 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Gym PWA</title>
+    <title>Gym Pro</title>
     <link rel="manifest" href="manifest.json">
+    
+    <!-- PWA мета-теги для iOS -->
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-    <link rel="apple-touch-icon" href="icon.png">
+    <meta name="apple-mobile-web-app-title" content="Gym Pro">
+    <meta name="theme-color" content="#007AFF">
+    <meta name="description" content="Профессиональное приложение для тренировок">
+    
+    <!-- Иконки для iOS -->
+    <link rel="apple-touch-icon" href="icons/icon-152.png">
+    <link rel="apple-touch-icon" sizes="180x180" href="icons/icon-180.png">
+    <link rel="apple-touch-icon" sizes="167x167" href="icons/icon-167.png">
+    <link rel="apple-touch-icon" sizes="152x152" href="icons/icon-152.png">
+    <link rel="apple-touch-icon" sizes="120x120" href="icons/icon-120.png">
+    
+    <link rel="icon" href="icons/icon-152.png" type="image/png">
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    
+    <!-- Шрифты iOS -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
     <style>
-        :root { --bg: #f2f2f7; --card: #fff; --primary: #007aff; --text: #1c1c1e; --gray: #8e8e93; }
-        body { font-family: -apple-system, sans-serif; background: var(--bg); color: var(--text); margin: 0; padding: 0; }
-        .screen { padding: 20px 20px 100px 20px; min-height: 100vh; box-sizing: border-box; }
-        .hidden { display: none !important; }
-        .card { background: var(--card); border-radius: 16px; padding: 18px; box-shadow: 0 4px 15px rgba(0,0,0,0.05); margin-bottom: 20px; }
-        h1 { font-size: 26px; font-weight: 800; margin-bottom: 20px; letter-spacing: -0.5px; }
-        h2 { font-size: 20px; margin: 0 0 5px 0; }
-        .tech-text { font-size: 15px; line-height: 1.5; color: #3a3a3c; white-space: pre-line; margin-bottom: 15px; }
-        .video-container { width: 100%; border-radius: 12px; overflow: hidden; background: #000; aspect-ratio: 16/9; margin-bottom: 20px; }
-        video { width: 100%; height: 100%; object-fit: cover; }
-        button { background: var(--primary); color: #fff; border: none; padding: 16px; border-radius: 14px; width: 100%; font-size: 17px; font-weight: 600; cursor: pointer; }
-        .btn-secondary { background: #e5e5ea; color: var(--primary); margin-top: 10px; }
-        .set-row { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 12px; }
-        .input-box { display: flex; flex-direction: column; }
-        .input-box label { font-size: 12px; color: var(--gray); margin-bottom: 4px; padding-left: 5px; }
-        input { background: #f2f2f7; border: 1px solid #d1d1d6; padding: 12px; border-radius: 10px; font-size: 17px; text-align: center; }
-        .nav { position: fixed; bottom: 0; left: 0; right: 0; background: rgba(255,255,255,0.85); backdrop-filter: blur(15px); display: flex; justify-content: space-around; padding: 12px 0 35px 0; border-top: 0.5px solid #d1d1d6; }
-        .nav-item { border: none; background: none; color: var(--gray); font-size: 11px; display: flex; flex-direction: column; align-items: center; width: 33%; }
-        .nav-item.active { color: var(--primary); }
+        :root {
+            --bg: #f2f2f7;
+            --card: #ffffff;
+            --primary: #007aff;
+            --primary-dark: #0056cc;
+            --secondary: #5856d6;
+            --text: #1c1c1e;
+            --text-secondary: #8e8e93;
+            --border: #c7c7cc;
+            --success: #34c759;
+            --warning: #ff9500;
+            --danger: #ff3b30;
+            --safe-area-inset-bottom: env(safe-area-inset-bottom);
+        }
+        
+        @supports (padding: max(0px)) {
+            :root {
+                --safe-area-inset-bottom: max(12px, env(safe-area-inset-bottom));
+            }
+        }
+        
+        * {
+            -webkit-tap-highlight-color: transparent;
+            -webkit-touch-callout: none;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Text', 'Helvetica Neue', sans-serif;
+            background: var(--bg);
+            color: var(--text);
+            margin: 0;
+            padding: 0;
+            -webkit-font-smoothing: antialiased;
+            -moz-osx-font-smoothing: grayscale;
+        }
+        
+        .screen {
+            padding: 20px 20px calc(80px + var(--safe-area-inset-bottom)) 20px;
+            min-height: 100vh;
+            max-width: 600px;
+            margin: 0 auto;
+        }
+        
+        .hidden {
+            display: none !important;
+        }
+        
+        /* Карточки */
+        .card {
+            background: var(--card);
+            border-radius: 14px;
+            padding: 18px;
+            margin-bottom: 16px;
+            box-shadow: 
+                0 2px 10px rgba(0,0,0,0.03),
+                0 1px 3px rgba(0,0,0,0.05);
+            border: 0.5px solid rgba(0,0,0,0.05);
+            transition: all 0.3s cubic-bezier(0.2, 0.8, 0.2, 1);
+            cursor: pointer;
+        }
+        
+        .card:hover {
+            transform: translateY(-2px);
+            box-shadow: 
+                0 5px 20px rgba(0,0,0,0.08),
+                0 2px 5px rgba(0,0,0,0.1);
+        }
+        
+        .card:active {
+            transform: translateY(0);
+            opacity: 0.9;
+        }
+        
+        /* Заголовки */
+        h1 {
+            font-size: 34px;
+            font-weight: 800;
+            margin: 0 0 24px 0;
+            letter-spacing: -0.5px;
+            background: linear-gradient(135deg, #007AFF 0%, #5856D6 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+        
+        h2 {
+            font-size: 20px;
+            font-weight: 700;
+            margin: 0 0 4px 0;
+            color: var(--text);
+        }
+        
+        .day-badge {
+            display: inline-block;
+            background: linear-gradient(135deg, #007AFF, #5856D6);
+            color: white;
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 13px;
+            font-weight: 600;
+            margin-bottom: 8px;
+            box-shadow: 0 2px 5px rgba(0,122,255,0.2);
+        }
+        
+        /* Техника выполнения */
+        .tech-text {
+            font-size: 15px;
+            line-height: 1.6;
+            color: var(--text);
+            white-space: pre-line;
+            margin-bottom: 15px;
+        }
+        
+        .tech-text b {
+            color: var(--primary);
+        }
+        
+        /* Видео контейнер */
+        .video-container {
+            width: 100%;
+            border-radius: 16px;
+            overflow: hidden;
+            background: #000;
+            aspect-ratio: 16/9;
+            margin-bottom: 20px;
+            position: relative;
+            box-shadow: 0 8px 25px rgba(0,0,0,0.15);
+        }
+        
+        .video-container:before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 30px;
+            background: linear-gradient(to bottom, rgba(0,0,0,0.2), transparent);
+            z-index: 1;
+            border-radius: 16px 16px 0 0;
+        }
+        
+        video {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            display: block;
+        }
+        
+        /* Кнопки */
+        button {
+            background: var(--primary);
+            color: #fff;
+            border: none;
+            padding: 16px 24px;
+            border-radius: 12px;
+            width: 100%;
+            font-size: 17px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            -webkit-appearance: none;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        button:after {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            width: 5px;
+            height: 5px;
+            background: rgba(255, 255, 255, 0.5);
+            opacity: 0;
+            border-radius: 100%;
+            transform: scale(1, 1) translate(-50%);
+            transform-origin: 50% 50%;
+        }
+        
+        button:focus:not(:active)::after {
+            animation: ripple 1s ease-out;
+        }
+        
+        @keyframes ripple {
+            0% {
+                transform: scale(0, 0);
+                opacity: 0.5;
+            }
+            100% {
+                transform: scale(40, 40);
+                opacity: 0;
+            }
+        }
+        
+        button:hover {
+            background: var(--primary-dark);
+            transform: translateY(-1px);
+            box-shadow: 0 4px 15px rgba(0,122,255,0.3);
+        }
+        
+        button:active {
+            transform: translateY(0);
+            background: #0047cc;
+        }
+        
+        .btn-secondary {
+            background: rgba(0,122,255,0.1);
+            color: var(--primary);
+            margin-top: 12px;
+        }
+        
+        .btn-secondary:hover {
+            background: rgba(0,122,255,0.15);
+            box-shadow: 0 4px 10px rgba(0,122,255,0.1);
+        }
+        
+        /* Поля ввода */
+        .input-box {
+            display: flex;
+            flex-direction: column;
+        }
+        
+        .input-box label {
+            font-size: 13px;
+            color: var(--text-secondary);
+            margin-bottom: 6px;
+            padding-left: 8px;
+            font-weight: 500;
+        }
+        
+        input {
+            background: #f2f2f7;
+            border: 2px solid transparent;
+            padding: 14px;
+            border-radius: 10px;
+            font-size: 17px;
+            font-weight: 500;
+            text-align: center;
+            font-family: -apple-system, sans-serif;
+            transition: all 0.2s ease;
+            -webkit-appearance: none;
+        }
+        
+        input:focus {
+            outline: none;
+            border-color: var(--primary);
+            background: white;
+            box-shadow: 0 0 0 3px rgba(0,122,255,0.1);
+        }
+        
+        input::-webkit-inner-spin-button,
+        input::-webkit-outer-spin-button {
+            -webkit-appearance: none;
+            margin: 0;
+        }
+        
+        .set-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 14px;
+            margin-bottom: 14px;
+        }
+        
+        /* Навигация */
+        .nav {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            background: rgba(255,255,255,0.95);
+            backdrop-filter: blur(20px) saturate(180%);
+            -webkit-backdrop-filter: blur(20px) saturate(180%);
+            display: flex;
+            justify-content: space-around;
+            padding: 12px 0 calc(12px + var(--safe-area-inset-bottom)) 0;
+            border-top: 0.5px solid rgba(0,0,0,0.1);
+            box-shadow: 0 -2px 20px rgba(0,0,0,0.05);
+            z-index: 1000;
+            max-width: 600px;
+            margin: 0 auto;
+        }
+        
+        .nav-item {
+            border: none;
+            background: none;
+            color: var(--text-secondary);
+            font-size: 11px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            width: 33%;
+            padding: 8px;
+            border-radius: 12px;
+            transition: all 0.2s ease;
+        }
+        
+        .nav-item.active {
+            color: var(--primary);
+            background: rgba(0,122,255,0.1);
+        }
+        
+        .nav-item i {
+            font-size: 22px;
+            margin-bottom: 4px;
+        }
+        
+        /* Прогресс бар */
+        .progress-container {
+            background: rgba(0,122,255,0.1);
+            height: 4px;
+            border-radius: 2px;
+            margin: 20px 0;
+            overflow: hidden;
+        }
+        
+        .progress-bar {
+            height: 100%;
+            background: linear-gradient(90deg, #007AFF, #5856D6);
+            border-radius: 2px;
+            transition: width 0.3s ease;
+            box-shadow: 0 0 10px rgba(0,122,255,0.3);
+        }
+        
+        /* Уведомления */
+        .toast {
+            position: fixed;
+            top: 20px;
+            left: 50%;
+            transform: translateX(-50%) translateY(-20px);
+            background: rgba(28,28,30,0.95);
+            color: white;
+            padding: 14px 24px;
+            border-radius: 14px;
+            z-index: 10000;
+            opacity: 0;
+            transition: all 0.3s cubic-bezier(0.2, 0.8, 0.2, 1);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+            max-width: 90%;
+        }
+        
+        .toast.show {
+            opacity: 1;
+            transform: translateX(-50%) translateY(0);
+        }
+        
+        /* Статистика */
+        .stat-card {
+            background: linear-gradient(135deg, #007AFF, #5856D6);
+            color: white;
+            padding: 20px;
+            border-radius: 16px;
+            margin-bottom: 20px;
+            box-shadow: 0 10px 30px rgba(0,122,255,0.2);
+        }
+        
+        .stat-value {
+            font-size: 32px;
+            font-weight: 800;
+            margin: 10px 0;
+        }
+        
+        .stat-label {
+            font-size: 14px;
+            opacity: 0.9;
+        }
+        
+        select {
+            width: 100%;
+            padding: 14px;
+            border-radius: 12px;
+            border: 2px solid var(--border);
+            background: var(--card);
+            font-size: 16px;
+            font-family: -apple-system, sans-serif;
+            color: var(--text);
+            -webkit-appearance: none;
+            background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='%238e8e93'%3e%3cpath d='M7 10l5 5 5-5z'/%3e%3c/svg%3e");
+            background-repeat: no-repeat;
+            background-position: right 14px center;
+            background-size: 20px;
+        }
+        
+        select:focus {
+            outline: none;
+            border-color: var(--primary);
+        }
+        
+        /* Анимации */
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        
+        .screen:not(.hidden) {
+            animation: fadeIn 0.3s ease-out;
+        }
+        
+        /* Скелетон для загрузки */
+        .skeleton {
+            background: linear-gradient(90deg, #f2f2f7 25%, #e5e5ea 50%, #f2f2f7 75%);
+            background-size: 200% 100%;
+            animation: loading 1.5s infinite;
+            border-radius: 8px;
+        }
+        
+        @keyframes loading {
+            0% { background-position: 200% 0; }
+            100% { background-position: -200% 0; }
+        }
+        
+        /* Адаптивность */
+        @media (max-width: 380px) {
+            .screen {
+                padding: 16px 16px calc(70px + var(--safe-area-inset-bottom)) 16px;
+            }
+            
+            h1 {
+                font-size: 28px;
+            }
+            
+            .set-row {
+                grid-template-columns: 1fr;
+            }
+        }
     </style>
 </head>
 <body>
 
 <div id="app">
+    <!-- Экран домашней страницы -->
     <div id="screen-home" class="screen">
-        <h1>Тренировки</h1>
-        <div class="card" onclick="startWorkout(0)"><h2>1️⃣ ДЕНЬ 1</h2><p>Грудь + Спина + Кор</p></div>
-        <div class="card" onclick="startWorkout(1)"><h2>2️⃣ ДЕНЬ 2</h2><p>Ноги + Кор</p></div>
-        <div class="card" onclick="startWorkout(2)"><h2>3️⃣ ДЕНЬ 3</h2><p>Плечи + Руки + Кор</p></div>
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 24px;">
+            <h1>Тренировки</h1>
+            <div style="display: flex; gap: 10px;">
+                <button onclick="showToast('Синхронизировано')" style="width: auto; padding: 8px 12px; background: rgba(0,122,255,0.1); color: var(--primary);">
+                    <i class="fas fa-sync-alt"></i>
+                </button>
+            </div>
+        </div>
+        
+        <div class="card" onclick="startWorkout(0)">
+            <div class="day-badge">ДЕНЬ 1</div>
+            <h2>Грудь + Спина + Кор</h2>
+            <p style="color: var(--text-secondary); margin: 8px 0 0 0; font-size: 15px;">
+                7 упражнений • ~60 минут
+            </p>
+            <div style="display: flex; align-items: center; margin-top: 12px;">
+                <div style="flex: 1; height: 4px; background: rgba(0,122,255,0.1); border-radius: 2px;">
+                    <div style="width: 75%; height: 100%; background: var(--primary); border-radius: 2px;"></div>
+                </div>
+                <span style="margin-left: 10px; font-size: 13px; color: var(--primary); font-weight: 600;">75%</span>
+            </div>
+        </div>
+        
+        <div class="card" onclick="startWorkout(1)">
+            <div class="day-badge" style="background: linear-gradient(135deg, #FF9500, #FF2D55);">ДЕНЬ 2</div>
+            <h2>Ноги + Кор</h2>
+            <p style="color: var(--text-secondary); margin: 8px 0 0 0; font-size: 15px;">
+                7 упражнений • ~60 минут
+            </p>
+            <div style="display: flex; align-items: center; margin-top: 12px;">
+                <div style="flex: 1; height: 4px; background: rgba(0,122,255,0.1); border-radius: 2px;">
+                    <div style="width: 40%; height: 100%; background: #FF9500; border-radius: 2px;"></div>
+                </div>
+                <span style="margin-left: 10px; font-size: 13px; color: #FF9500; font-weight: 600;">40%</span>
+            </div>
+        </div>
+        
+        <div class="card" onclick="startWorkout(2)">
+            <div class="day-badge" style="background: linear-gradient(135deg, #34C759, #32D74B);">ДЕНЬ 3</div>
+            <h2>Плечи + Руки + Кор</h2>
+            <p style="color: var(--text-secondary); margin: 8px 0 0 0; font-size: 15px;">
+                9 упражнений • ~70 минут
+            </p>
+            <div style="display: flex; align-items: center; margin-top: 12px;">
+                <div style="flex: 1; height: 4px; background: rgba(0,122,255,0.1); border-radius: 2px;">
+                    <div style="width: 25%; height: 100%; background: #34C759; border-radius: 2px;"></div>
+                </div>
+                <span style="margin-left: 10px; font-size: 13px; color: #34C759; font-weight: 600;">25%</span>
+            </div>
+        </div>
+        
+        <div class="card" style="text-align: center; background: linear-gradient(135deg, rgba(0,122,255,0.1), rgba(88,86,214,0.1));">
+            <h3 style="margin: 0 0 10px 0;">🎯 Цель недели</h3>
+            <p style="margin: 0; color: var(--text-secondary);">
+                3 тренировки • 12,500 кг общий тоннаж
+            </p>
+        </div>
     </div>
 
+    <!-- Экран упражнения -->
     <div id="screen-exercise" class="screen hidden">
         <div id="ex-content"></div>
     </div>
 
+    <!-- Экран статистики -->
     <div id="screen-stats" class="screen hidden">
         <h1>Прогресс</h1>
-        <div class="card">
-            <select id="chart-select" onchange="initChart()" style="width:100%; padding:10px;"></select>
-            <div style="height: 250px; margin-top:20px;"><canvas id="mainChart"></canvas></div>
+        
+        <div class="stat-card">
+            <div class="stat-label">Общий тоннаж</div>
+            <div class="stat-value" id="total-volume">0 кг</div>
+            <div class="stat-label">За все время</div>
         </div>
+        
+        <div class="card">
+            <h3 style="margin-top: 0;">📈 График прогресса</h3>
+            <select id="chart-select" onchange="initChart()">
+                <option value="">Выберите упражнение</option>
+            </select>
+            <div style="height: 250px; margin-top: 20px; position: relative;">
+                <canvas id="mainChart"></canvas>
+            </div>
+        </div>
+        
+        <div style="display: flex; justify-content: space-between; align-items: center; margin: 24px 0 12px 0;">
+            <h3 style="margin: 0;">📝 История</h3>
+            <button onclick="clearHistory()" style="width: auto; padding: 8px 16px; background: rgba(255,59,48,0.1); color: var(--danger);">
+                Очистить
+            </button>
+        </div>
+        
         <div id="history-list"></div>
     </div>
 
+    <!-- Навигация -->
     <nav class="nav">
-        <div class="nav-item active" onclick="showScreen('home')">🗓 Тренинг</div>
-        <div class="nav-item" onclick="showScreen('stats')">📊 Прогресс</div>
+        <button class="nav-item active" onclick="showScreen('home')">
+            <i class="fas fa-dumbbell"></i>
+            <span>Тренинг</span>
+        </button>
+        <button class="nav-item" onclick="showScreen('stats')">
+            <i class="fas fa-chart-line"></i>
+            <span>Прогресс</span>
+        </button>
     </nav>
+    
+    <!-- Уведомления -->
+    <div id="toast" class="toast"></div>
 </div>
 
 <script>
+// Конфигурация тренировочной программы
 const program = [
     {
         day: "ДЕНЬ 1: Грудь + Спина + Кор",
         exercises: [
-            { name: "Жим в рычажном тренажере Hammer Strength", tech: "✅ Отрегулируйте сиденье так, чтобы рукоятки были на уровне середины груди (сосков).\n✅ Сведите лопатки вместе и плотно прижмите спину к спинке.\n✅ На выдохе мощно выжмите рукояти вперед.\n❗️ Важно: В конечной точке не выпрямляйте локти до конца («до щелчка»), оставляйте их чуть мягкими, чтобы нагрузка оставалась в мышцах.\n✅ На вдохе медленно верните вес назад, максимально растягивая грудные мышцы.", volume: "4 подхода по 8–12 повторений", video: "v1_1.mp4" },
-            { name: "Тяга верхнего блока Life Fitness", tech: "✅ Зафиксируйте ноги валиком. Хват шире плеч.\n✅ Слегка прогните поясницу, грудь смотрит вверх.\n✅ Тяните рукоять к ключицам. Представьте, что тянете не кистями, а локтями вниз.\n✅ В нижней точке пауза на 1 секунду и сильно сожмите лопатки.\n✅ Плавно верните рукоять вверх, растягивая спину.", volume: "4 подхода по 10–12 повторений", video: "v1_2.mp4" },
-            { name: "Жим гантелей на наклонной скамье", tech: "✅ Лягте, ноги жестко уприте в пол.\n✅ Поднимите гантели над собой. На вдохе опускайте их к краям грудных мышц.\n✅ Локти должны смотреть не в стороны, а немного вперед (под углом 75° к корпусу).\n✅ Опускайте глубоко, чувствуя растяжение. На выдохе выжмите вверх.", volume: "3 подхода по 10–12 повторений", video: "v1_3.mp4" },
-            { name: "Горизонтальная рычажная тяга Hammer", tech: "✅ Упритесь грудью в подушку. Хват нейтральный.\n✅ Тяните рукояти к поясу. Движение начинается с отведения плеч назад, затем локти.\n✅ В пиковой точке максимально сведите лопатки.\n❗️ Не раскачивайтесь корпусом, работает только спина.", volume: "3 подхода по 10–12 повторений", video: "v1_4.mp4" },
-            { name: "Сведение рук в тренажере 'Бабочка'", tech: "✅ Локти держите на уровне плеч и слегка согнутыми.\n✅ На выдохе сводите рукояти перед собой. В момент сведения напрягите грудь на 1 секунду.\n✅ Медленно разводите руки обратно.", volume: "3 подхода по 12–15 повторений", video: "v1_5.mp4" },
-            { name: "Скручивания (пресс)", tech: "✅ Округляйте спину, скручивайтесь в 'улитку'.\n✅ Не поднимайтесь с прямой спиной.", volume: "3 подхода по 15–20 раз", video: "v1_6.mp4" },
-            { name: "Планка", tech: "✅ Упор на локти и носки. Тело прямое как доска.", volume: "3 подхода по 60 секунд", video: "v1_7.mp4" }
+            { 
+                name: "Жим в рычажном тренажере Hammer Strength", 
+                tech: "✅ Отрегулируйте сиденье так, чтобы рукоятки были на уровне середины груди (сосков).\n✅ Сведите лопатки вместе и плотно прижмите спину к спинке.\n✅ На выдохе мощно выжмите рукояти вперед.\n❗️ Важно: В конечной точке не выпрямляйте локти до конца («до щелчка»), оставляйте их чуть мягкими, чтобы нагрузка оставалась в мышцах.\n✅ На вдохе медленно верните вес назад, максимально растягивая грудные мышцы.", 
+                volume: "4 подхода по 8–12 повторений", 
+                video: "v1_1.mp4",
+                icon: "fas fa-fire"
+            },
+            { 
+                name: "Тяга верхнего блока Life Fitness", 
+                tech: "✅ Зафиксируйте ноги валиком. Хват шире плеч.\n✅ Слегка прогните поясницу, грудь смотрит вверх.\n✅ Тяните рукоять к ключицам. Представьте, что тянете не кистями, а локтями вниз.\n✅ В нижней точке пауза на 1 секунду и сильно сожмите лопатки.\n✅ Плавно верните рукоять вверх, растягивая спину.", 
+                volume: "4 подхода по 10–12 повторений", 
+                video: "v1_2.mp4",
+                icon: "fas fa-arrow-down"
+            },
+            { 
+                name: "Жим гантелей на наклонной скамье", 
+                tech: "✅ Лягте, ноги жестко уприте в пол.\n✅ Поднимите гантели над собой. На вдохе опускайте их к краям грудных мышц.\n✅ Локти должны смотреть не в стороны, а немного вперед (под углом 75° к корпусу).\n✅ Опускайте глубоко, чувствуя растяжение. На выдохе выжмите вверх.", 
+                volume: "3 подхода по 10–12 повторений", 
+                video: "v1_3.mp4",
+                icon: "fas fa-angle-double-up"
+            },
+            { 
+                name: "Горизонтальная рычажная тяга Hammer", 
+                tech: "✅ Упритесь грудью в подушку. Хват нейтральный.\n✅ Тяните рукояти к поясу. Движение начинается с отведения плеч назад, затем локти.\n✅ В пиковой точке максимально сведите лопатки.\n❗️ Не раскачивайтесь корпусом, работает только спина.", 
+                volume: "3 подхода по 10–12 повторений", 
+                video: "v1_4.mp4",
+                icon: "fas fa-dumbbell"
+            },
+            { 
+                name: "Сведение рук в тренажере 'Бабочка'", 
+                tech: "✅ Локти держите на уровне плеч и слегка согнутыми.\n✅ На выдохе сводите рукояти перед собой. В момент сведения напрягите грудь на 1 секунду.\n✅ Медленно разводите руки обратно.", 
+                volume: "3 подхода по 12–15 повторений", 
+                video: "v1_5.mp4",
+                icon: "fas fa-compress-alt"
+            },
+            { 
+                name: "Скручивания (пресс)", 
+                tech: "✅ Округляйте спину, скручивайтесь в 'улитку'.\n✅ Не поднимайтесь с прямой спиной.", 
+                volume: "3 подхода по 15–20 раз", 
+                video: "v1_6.mp4",
+                icon: "fas fa-running"
+            },
+            { 
+                name: "Планка", 
+                tech: "✅ Упор на локти и носки. Тело прямое как доска.", 
+                volume: "3 подхода по 60 секунд", 
+                video: "v1_7.mp4",
+                icon: "fas fa-clock"
+            }
         ]
     },
     {
         day: "ДЕНЬ 2: Ноги + Кор",
         exercises: [
-            { name: "Разгибание ног в тренажере", tech: "✅ Коленный сустав строго напротив оси вращения тренажера.\n✅ На выдохе полностью выпрямите ноги. В верхней точке задержитесь на 1-2 секунды.\n✅ Медленно опустите.", volume: "3 подхода по 15 повторений", video: "v2_1.mp4" },
-            { name: "Жим ногами", tech: "✅ Поставьте ноги на ширине плеч.\n✅ На вдохе опускайте платформу глубоко, но следите, чтобы таз не отрывался.\n✅ На выдохе толкайте платформу пятками.\n❗️ Важно: Никогда не выпрямляйте колени полностью!", volume: "4 подхода по 10–12 повторений", video: "v2_2.mp4" },
-            { name: "Румынская тяга с гантелями", tech: "✅ Колени чуть согнуты и зафиксированы.\n✅ Начинайте движение с отведения таза назад. Гантели скользят по ногам.\n✅ Опускайтесь до середины голени. Вы должны чувствовать натяжение под коленями.\n✅ На выдохе вернитесь, сжимая ягодицы.", volume: "4 подхода по 10–12 повторений", video: "v2_3.mp4" },
-            { name: "Сгибание ног (бицепс бедра)", tech: "✅ Прижмите таз к скамье и не отрывайте его.\n✅ Быстро согните ноги, стараясь коснуться ягодиц.\n✅ Медленно (на 3 счета) разогните ноги обратно.", volume: "3 подхода по 12–15 повторений", video: "v2_4.mp4" },
-            { name: "Подъемы на носки", tech: "✅ Опустите пятки максимально низко, затем поднимите максимально высоко.", volume: "4 подхода по 15–20 повторений", video: "v2_5.mp4" },
-            { name: "Подъем ног (пресс)", tech: "✅ В упоре на локтях. Старайтесь подкручивать таз вверх.\n✅ Движения плавные без раскачки.", volume: "3 подхода по 12–15 раз", video: "v2_6.mp4" },
-            { name: "Скручивания", tech: "✅ Округляйте спину, скручивайтесь в 'улитку'.", volume: "3 подхода по 15–20 раз", video: "v2_7.mp4" }
+            { 
+                name: "Разгибание ног в тренажере", 
+                tech: "✅ Коленный сустав строго напротив оси вращения тренажера.\n✅ На выдохе полностью выпрямите ноги. В верхней точке задержитесь на 1-2 секунды.\n✅ Медленно опустите.", 
+                volume: "3 подхода по 15 повторений", 
+                video: "v2_1.mp4",
+                icon: "fas fa-angle-up"
+            },
+            { 
+                name: "Жим ногами", 
+                tech: "✅ Поставьте ноги на ширине плеч.\n✅ На вдохе опускайте платформу глубоко, но следите, чтобы таз не отрывался.\n✅ На выдохе толкайте платформу пятками.\n❗️ Важно: Никогда не выпрямляйте колени полностью!", 
+                volume: "4 подхода по 10–12 повторений", 
+                video: "v2_2.mp4",
+                icon: "fas fa-shoe-prints"
+            },
+            { 
+                name: "Румынская тяга с гантелями", 
+                tech: "✅ Колени чуть согнуты и зафиксированы.\n✅ Начинайте движение с отведения таза назад. Гантели скользят по ногам.\n✅ Опускайтесь до середины голени. Вы должны чувствовать натяжение под коленями.\n✅ На выдохе вернитесь, сжимая ягодицы.", 
+                volume: "4 подхода по 10–12 повторений", 
+                video: "v2_3.mp4",
+                icon: "fas fa-weight-hanging"
+            },
+            { 
+                name: "Сгибание ног (бицепс бедра)", 
+                tech: "✅ Прижмите таз к скамье и не отрывайте его.\n✅ Быстро согните ноги, стараясь коснуться ягодиц.\n✅ Медленно (на 3 счета) разогните ноги обратно.", 
+                volume: "3 подхода по 12–15 повторений", 
+                video: "v2_4.mp4",
+                icon: "fas fa-angle-down"
+            },
+            { 
+                name: "Подъемы на носки", 
+                tech: "✅ Опустите пятки максимально низко, затем поднимите максимально высоко.", 
+                volume: "4 подхода по 15–20 повторений", 
+                video: "v2_5.mp4",
+                icon: "fas fa-arrow-up"
+            },
+            { 
+                name: "Подъем ног (пресс)", 
+                tech: "✅ В упоре на локтях. Старайтесь подкручивать таз вверх.\n✅ Движения плавные без раскачки.", 
+                volume: "3 подхода по 12–15 раз", 
+                video: "v2_6.mp4",
+                icon: "fas fa-running"
+            },
+            { 
+                name: "Скручивания", 
+                tech: "✅ Округляйте спину, скручивайтесь в 'улитку'.", 
+                volume: "3 подхода по 15–20 раз", 
+                video: "v2_7.mp4",
+                icon: "fas fa-running"
+            }
         ]
     },
     {
         day: "ДЕНЬ 3: Плечи + Руки + Кор",
         exercises: [
-            { name: "Жим гантелей сидя (Плечи)", tech: "✅ Сядьте, плотно прижмитесь спиной. Гантели на уровне ушей.\n✅ Выжмите гантели вверх по дуге, сводя их над головой.\n✅ Плавно опустите до уровня ушей.", volume: "4 подхода по 8–12 повторений", video: "v3_1.mp4" },
-            { name: "Разведение гантелей в стороны (Махи)", tech: "✅ Встаньте прямо, небольшой наклон вперед.\n✅ Поднимайте руки через стороны. Локоть выше кисти, мизинец выше большого пальца.\n✅ Только до параллели с полом.", volume: "3 подхода по 12–15 повторений", video: "v3_2.mp4" },
-            { name: "Обратные разведения (Задняя дельта)", tech: "✅ Сядьте лицом к спинке тренажера.\n✅ Отводите прямые руки назад так далеко, как можете.\n✅ Чувствуйте зад плеч, а не спину.", volume: "3 подхода по 12–15 повторений", video: "v3_3.mp4" },
-            { name: "Разгибание на блоке (Трицепс)", tech: "✅ Прижмите локти к корпусу.\n✅ Разгибайте руки вниз. В нижней точке разведите концы каната.", volume: "3 подхода по 12–15 повторений", video: "v3_4.mp4" },
-            { name: "Французский жим лежа", tech: "✅ Сгибайте руки, заводя гриф глубоко за голову.\n✅ Локти смотрят в потолок.\n✅ Почувствуйте растяжение трицепса и выжмите вверх.", volume: "3 подхода по 10–12 повторений", video: "v3_5.mp4" },
-            { name: "Сгибание рук с супинацией (Бицепс)", tech: "✅ Начинайте подъем, разворачивая кисть наружу.\n✅ В верхней точке мизинец выше большого пальца.", volume: "3 подхода по 10–12 повторений", video: "v3_6.mp4" },
-            { name: "Молотки", tech: "✅ Ладони смотрят друг на друга все время. Без разворота.", volume: "3 подхода по 10–12 повторений", video: "v3_7.mp4" },
-            { name: "Русский твист", tech: "✅ Сидя, ноги на весу, поворачивайте корпус в стороны.", volume: "3 подхода по 20 раз", video: "v3_8.mp4" },
-            { name: "Молитва на блоке", tech: "✅ Стоя на коленях, скручивайтесь вниз силой пресса.", volume: "3 подхода по 15–20 раз", video: "v3_9.mp4" }
+            { 
+                name: "Жим гантелей сидя (Плечи)", 
+                tech: "✅ Сядьте, плотно прижмитесь спиной. Гантели на уровне ушей.\n✅ Выжмите гантели вверх по дуге, сводя их над головой.\n✅ Плавно опустите до уровня ушей.", 
+                volume: "4 подхода по 8–12 повторений", 
+                video: "v3_1.mp4",
+                icon: "fas fa-angle-double-up"
+            },
+            { 
+                name: "Разведение гантелей в стороны (Махи)", 
+                tech: "✅ Встаньте прямо, небольшой наклон вперед.\n✅ Поднимайте руки через стороны. Локоть выше кисти, мизинец выше большого пальца.\n✅ Только до параллели с полом.", 
+                volume: "3 подхода по 12–15 повторений", 
+                video: "v3_2.mp4",
+                icon: "fas fa-arrows-alt-h"
+            },
+            { 
+                name: "Обратные разведения (Задняя дельта)", 
+                tech: "✅ Сядьте лицом к спинке тренажера.\n✅ Отводите прямые руки назад так далеко, как можете.\n✅ Чувствуйте зад плеч, а не спину.", 
+                volume: "3 подхода по 12–15 повторений", 
+                video: "v3_3.mp4",
+                icon: "fas fa-arrow-right"
+            },
+            { 
+                name: "Разгибание на блоке (Трицепс)", 
+                tech: "✅ Прижмите локти к корпусу.\n✅ Разгибайте руки вниз. В нижней точке разведите концы каната.", 
+                volume: "3 подхода по 12–15 повторений", 
+                video: "v3_4.mp4",
+                icon: "fas fa-angle-down"
+            },
+            { 
+                name: "Французский жим лежа", 
+                tech: "✅ Сгибайте руки, заводя гриф глубоко за голову.\n✅ Локти смотрят в потолок.\n✅ Почувствуйте растяжение трицепса и выжмите вверх.", 
+                volume: "3 подхода по 10–12 повторений", 
+                video: "v3_5.mp4",
+                icon: "fas fa-weight"
+            },
+            { 
+                name: "Сгибание рук с супинацией (Бицепс)", 
+                tech: "✅ Начинайте подъем, разворачивая кисть наружу.\n✅ В верхней точке мизинец выше большого пальца.", 
+                volume: "3 подхода по 10–12 повторений", 
+                video: "v3_6.mp4",
+                icon: "fas fa-dumbbell"
+            },
+            { 
+                name: "Молотки", 
+                tech: "✅ Ладони смотрят друг на друга все время. Без разворота.", 
+                volume: "3 подхода по 10–12 повторений", 
+                video: "v3_7.mp4",
+                icon: "fas fa-hammer"
+            },
+            { 
+                name: "Русский твист", 
+                tech: "✅ Сидя, ноги на весу, поворачивайте корпус в стороны.", 
+                volume: "3 подхода по 20 раз", 
+                video: "v3_8.mp4",
+                icon: "fas fa-sync-alt"
+            },
+            { 
+                name: "Молитва на блоке", 
+                tech: "✅ Стоя на коленях, скручивайтесь вниз силой пресса.", 
+                volume: "3 подхода по 15–20 раз", 
+                video: "v3_9.mp4",
+                icon: "fas fa-pray"
+            }
         ]
     }
 ];
 
-let curDay = null, curExIdx = 0, logs = JSON.parse(localStorage.getItem('gym_v4_logs')) || [], chartObj = null;
+// Глобальные переменные
+let curDay = null;
+let curExIdx = 0;
+let logs = JSON.parse(localStorage.getItem('gym_pro_logs')) || [];
+let chartObj = null;
+const MAX_LOG_ENTRIES = 500;
 
+// Показать экран
 function showScreen(id) {
     document.querySelectorAll('.screen').forEach(s => s.classList.add('hidden'));
     document.getElementById('screen-' + id).classList.remove('hidden');
+    
     document.querySelectorAll('.nav-item').forEach(i => i.classList.remove('active'));
     if(id === 'home') document.querySelectorAll('.nav-item')[0].classList.add('active');
-    if(id === 'stats') { document.querySelectorAll('.nav-item')[1].classList.add('active'); renderStats(); }
+    if(id === 'stats') { 
+        document.querySelectorAll('.nav-item')[1].classList.add('active'); 
+        renderStats(); 
+    }
+    
+    // Прокрутка вверх при смене экрана
+    window.scrollTo(0, 0);
 }
 
+// Начать тренировку
 function startWorkout(dayIdx) {
     curDay = program[dayIdx];
     curExIdx = 0;
     showScreen('exercise');
     renderExercise();
+    showToast(`Начата ${curDay.day}`);
 }
 
+// Отрисовка упражнения
 function renderExercise() {
     const ex = curDay.exercises[curExIdx];
     const isLast = curExIdx === curDay.exercises.length - 1;
+    const progress = ((curExIdx + 1) / curDay.exercises.length * 100).toFixed(0);
+    
     let setsHtml = '';
-    for(let i=1; i<=4; i++) {
+    for(let i = 1; i <= 4; i++) {
         setsHtml += `<div class="set-row">
-            <div class="input-box"><label>Вес (кг)</label><input type="number" step="0.5" id="w-${i}" placeholder="0"></div>
-            <div class="input-box"><label>Повторы</label><input type="number" id="r-${i}" placeholder="0"></div>
+            <div class="input-box">
+                <label><i class="fas fa-weight"></i> Вес (кг)</label>
+                <input type="number" step="0.5" id="w-${i}" placeholder="0" inputmode="decimal">
+            </div>
+            <div class="input-box">
+                <label><i class="fas fa-redo"></i> Повторы</label>
+                <input type="number" id="r-${i}" placeholder="0" inputmode="numeric">
+            </div>
         </div>`;
     }
 
     document.getElementById('ex-content').innerHTML = `
-        <p style="color:var(--gray); margin-bottom:5px;">${curDay.day} • ${curExIdx+1}/${curDay.exercises.length}</p>
-        <h1>${ex.name}</h1>
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px;">
+            <div>
+                <p style="color: var(--text-secondary); margin: 0; font-size: 14px;">${curDay.day}</p>
+                <h1 style="margin: 4px 0 0 0; font-size: 24px;">
+                    <i class="${ex.icon}" style="color: var(--primary); margin-right: 8px;"></i>
+                    ${ex.name}
+                </h1>
+            </div>
+            <div style="background: var(--primary); color: white; padding: 8px 12px; border-radius: 20px; font-weight: 600;">
+                ${curExIdx + 1}/${curDay.exercises.length}
+            </div>
+        </div>
+        
+        <div class="progress-container">
+            <div class="progress-bar" style="width: ${progress}%"></div>
+        </div>
+        
         <div class="video-container">
-            <video playsinline loop controls preload="auto" src="video/${ex.video}"></video>
+            <video playsinline loop controls preload="metadata" src="video/${ex.video}"
+                onerror="this.style.display='none'; this.parentElement.innerHTML='<div style=\'padding:40px; text-align:center; color:#999\'><i class=\'fas fa-video-slash\' style=\'font-size:40px; margin-bottom:10px; color:#c7c7cc;\'></i><br>Видео недоступно</div>';"
+                onloadeddata="showToast('Видео загружено')">
+            </video>
         </div>
+        
         <div class="card">
-            <div class="tech-text"><b>Объем:</b> ${ex.volume}\n\n${ex.tech}</div>
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
+                <h3 style="margin: 0;"><i class="fas fa-clipboard-list"></i> Техника выполнения</h3>
+                <span style="background: rgba(0,122,255,0.1); color: var(--primary); padding: 4px 10px; border-radius: 12px; font-size: 13px; font-weight: 600;">
+                    ${ex.volume}
+                </span>
+            </div>
+            <div class="tech-text">${ex.tech}</div>
         </div>
+        
         <div class="card">
+            <h3 style="margin-top: 0;"><i class="fas fa-edit"></i> Запись подхода</h3>
             ${setsHtml}
-            <button onclick="saveEx()">${isLast ? 'ФИНИШ' : 'ДАЛЕЕ'}</button>
-            <button class="btn-secondary" onclick="showScreen('home')">ВЫХОД</button>
+            <button onclick="saveEx()">
+                <i class="fas fa-save"></i> ${isLast ? 'ЗАВЕРШИТЬ ТРЕНИРОВКУ' : 'СОХРАНИТЬ И ДАЛЕЕ'}
+            </button>
+            <button class="btn-secondary" onclick="confirmExit()">
+                <i class="fas fa-times"></i> ВЫЙТИ БЕЗ СОХРАНЕНИЯ
+            </button>
         </div>
     `;
-    window.scrollTo(0,0);
+    
+    // Автофокус на первое поле
+    setTimeout(() => {
+        const firstInput = document.getElementById('w-1');
+        if (firstInput) firstInput.focus();
+    }, 300);
 }
 
+// Сохранить упражнение
 function saveEx() {
     const ex = curDay.exercises[curExIdx];
     const results = [];
-    for(let i=1; i<=4; i++) {
-        const w = document.getElementById(`w-${i}`).value, r = document.getElementById(`r-${i}`).value;
-        if(w && r) results.push({w: parseFloat(w), r: parseInt(r)});
+    
+    for(let i = 1; i <= 4; i++) {
+        const w = document.getElementById(`w-${i}`).value;
+        const r = document.getElementById(`r-${i}`).value;
+        if(w && r) {
+            results.push({
+                w: parseFloat(w),
+                r: parseInt(r),
+                volume: parseFloat(w) * parseInt(r)
+            });
+        }
     }
-    if(results.length) {
-        logs.push({ t: Date.now(), d: new Date().toLocaleDateString('ru-RU'), n: ex.name, s: results });
-        localStorage.setItem('gym_v4_logs', JSON.stringify(logs));
+    
+    if(results.length > 0) {
+        logs.push({
+            t: Date.now(),
+            d: new Date().toLocaleDateString('ru-RU', { 
+                weekday: 'short', 
+                year: 'numeric', 
+                month: 'short', 
+                day: 'numeric' 
+            }),
+            n: ex.name,
+            s: results,
+            totalVolume: results.reduce((sum, s) => sum + s.volume, 0)
+        });
+        localStorage.setItem('gym_pro_logs', JSON.stringify(logs));
+        showToast(`Сохранено: ${ex.name}`);
     }
-    if(curExIdx < curDay.exercises.length - 1) { curExIdx++; renderExercise(); }
-    else { alert("Тренировка закончена!"); showScreen('home'); }
+    
+    if(curExIdx < curDay.exercises.length - 1) {
+        curExIdx++;
+        renderExercise();
+    } else {
+        const totalVolume = logs.slice(-curDay.exercises.length).reduce((sum, log) => sum + log.totalVolume, 0);
+        showToast(`Тренировка завершена! Тоннаж: ${totalVolume.toFixed(0)}кг`);
+        setTimeout(() => showScreen('home'), 1500);
+    }
 }
 
+// Подтверждение выхода
+function confirmExit() {
+    if (confirm('Вы уверены, что хотите выйти без сохранения прогресса?')) {
+        showScreen('home');
+    }
+}
+
+// Показать уведомление
+function showToast(message) {
+    const toast = document.getElementById('toast');
+    toast.textContent = message;
+    toast.classList.add('show');
+    
+    setTimeout(() => {
+        toast.classList.remove('show');
+    }, 3000);
+}
+
+// Очистка старых логов
+function cleanupOldLogs() {
+    if (logs.length > MAX_LOG_ENTRIES) {
+        logs = logs.slice(logs.length - MAX_LOG_ENTRIES);
+        localStorage.setItem('gym_pro_logs', JSON.stringify(logs));
+    }
+}
+
+// Отрисовка статистики
 function renderStats() {
+    cleanupOldLogs();
+    
+    // Общий тоннаж
+    const totalVolume = logs.reduce((sum, log) => sum + (log.totalVolume || 0), 0);
+    document.getElementById('total-volume').textContent = `${totalVolume.toFixed(0)} кг`;
+    
+    // Список упражнений для графика
     const names = [...new Set(logs.map(l => l.n))];
     const sel = document.getElementById('chart-select');
-    sel.innerHTML = names.map(n => `<option value="${n}">${n}</option>`).join('');
-    document.getElementById('history-list').innerHTML = logs.slice().reverse().slice(0,15).map(l => `
-        <div class="card" style="padding:12px; margin-bottom:10px; font-size:13px;">
-            <b>${l.d}</b> - ${l.n}<br>
-            ${l.s.map(s => `${s.w}кг x ${s.r}`).join(' | ')}
-        </div>
-    `).join('');
-    if(names.length) initChart();
+    sel.innerHTML = '<option value="">Выберите упражнение</option>' + 
+        names.map(n => `<option value="${n}">${n}</option>`).join('');
+    
+    // История тренировок
+    const historyList = document.getElementById('history-list');
+    if (logs.length === 0) {
+        historyList.innerHTML = `
+            <div class="card" style="text-align: center; padding: 40px 20px;">
+                <i class="fas fa-chart-line" style="font-size: 48px; color: var(--text-secondary); margin-bottom: 16px;"></i>
+                <h3 style="margin: 0 0 8px 0;">Нет данных</h3>
+                <p style="color: var(--text-secondary); margin: 0;">Начните тренироваться, чтобы отслеживать прогресс</p>
+            </div>
+        `;
+    } else {
+        historyList.innerHTML = logs.slice().reverse().slice(0, 10).map((l, index) => `
+            <div class="card" style="padding: 16px; margin-bottom: 12px; position: relative;">
+                <button onclick="deleteLog(${logs.length - 1 - index})" style="position: absolute; top: 16px; right: 16px; background: none; border: none; color: var(--danger); font-size: 18px; cursor: pointer; width: 30px; height: 30px; display: flex; align-items: center; justify-content: center; border-radius: 15px; background: rgba(255,59,48,0.1);">
+                    <i class="fas fa-times"></i>
+                </button>
+                <div style="display: flex; justify-content: space-between; align-items: start; margin-bottom: 8px;">
+                    <div>
+                        <div style="font-weight: 600; color: var(--primary); font-size: 12px; margin-bottom: 4px;">
+                            <i class="far fa-calendar"></i> ${l.d}
+                        </div>
+                        <div style="font-weight: 700; font-size: 16px; margin-bottom: 8px;">${l.n}</div>
+                    </div>
+                    <div style="background: linear-gradient(135deg, rgba(0,122,255,0.1), rgba(88,86,214,0.1)); padding: 4px 10px; border-radius: 12px; font-size: 13px; font-weight: 600;">
+                        ${l.totalVolume ? l.totalVolume.toFixed(0) : '0'} кг
+                    </div>
+                </div>
+                <div style="display: flex; flex-wrap: wrap; gap: 8px;">
+                    ${l.s.map(s => `
+                        <div style="background: var(--bg); padding: 6px 12px; border-radius: 10px; font-size: 14px; min-width: 80px;">
+                            <div style="font-weight: 700;">${s.w} кг</div>
+                            <div style="color: var(--text-secondary); font-size: 12px;">× ${s.r} повт.</div>
+                        </div>
+                    `).join('')}
+                </div>
+            </div>
+        `).join('');
+    }
+    
+    // Инициализация графика
+    if(names.length > 0) {
+        initChart();
+    }
 }
 
+// Удалить запись
+function deleteLog(index) {
+    if (confirm('Удалить эту запись? Это действие нельзя отменить.')) {
+        logs.splice(index, 1);
+        localStorage.setItem('gym_pro_logs', JSON.stringify(logs));
+        renderStats();
+        showToast('Запись удалена');
+    }
+}
+
+// Очистить историю
+function clearHistory() {
+    if (confirm('Вы уверены, что хотите очистить всю историю тренировок?')) {
+        logs = [];
+        localStorage.setItem('gym_pro_logs', JSON.stringify(logs));
+        renderStats();
+        showToast('История очищена');
+    }
+}
+
+// Инициализация графика
 function initChart() {
     const name = document.getElementById('chart-select').value;
-    const filtered = logs.filter(l => l.n === name).sort((a,b) => a.t - b.t);
+    if (!name) return;
+    
+    const filtered = logs.filter(l => l.n === name).sort((a, b) => a.t - b.t);
+    if (filtered.length === 0) return;
+    
     const ctx = document.getElementById('mainChart').getContext('2d');
+    
     if(chartObj) chartObj.destroy();
+    
+    // Подготовка данных
+    const dates = filtered.map(f => f.d.split(',')[0]);
+    const maxWeights = filtered.map(f => Math.max(...f.s.map(s => s.w)));
+    const volumes = filtered.map(f => f.totalVolume || 0);
+    
     chartObj = new Chart(ctx, {
         type: 'line',
         data: {
-            labels: filtered.map(f => f.d),
-            datasets: [{ label: 'Макс. вес (кг)', data: filtered.map(f => Math.max(...f.s.map(s=>s.w))), borderColor: '#007aff', tension: 0.3 }]
+            labels: dates,
+            datasets: [
+                {
+                    label: 'Макс. вес (кг)',
+                    data: maxWeights,
+                    borderColor: '#007aff',
+                    backgroundColor: 'rgba(0, 122, 255, 0.1)',
+                    borderWidth: 3,
+                    tension: 0.4,
+                    fill: true,
+                    yAxisID: 'y'
+                },
+                {
+                    label: 'Тоннаж (кг)',
+                    data: volumes,
+                    borderColor: '#34c759',
+                    backgroundColor: 'rgba(52, 199, 89, 0.1)',
+                    borderWidth: 3,
+                    tension: 0.4,
+                    fill: true,
+                    yAxisID: 'y1'
+                }
+            ]
         },
-        options: { responsive: true, maintainAspectRatio: false }
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            interaction: {
+                mode: 'index',
+                intersect: false,
+            },
+            plugins: {
+                legend: {
+                    position: 'top',
+                },
+                tooltip: {
+                    callbacks: {
+                        label: function(context) {
+                            let label = context.dataset.label || '';
+                            if (label) {
+                                label += ': ';
+                            }
+                            label += context.parsed.y.toFixed(context.dataset.label.includes('Тоннаж') ? 0 : 1);
+                            return label;
+                        }
+                    }
+                }
+            },
+            scales: {
+                x: {
+                    grid: {
+                        color: 'rgba(0,0,0,0.05)'
+                    }
+                },
+                y: {
+                    type: 'linear',
+                    display: true,
+                    position: 'left',
+                    grid: {
+                        color: 'rgba(0,0,0,0.05)'
+                    },
+                    title: {
+                        display: true,
+                        text: 'Вес (кг)'
+                    }
+                },
+                y1: {
+                    type: 'linear',
+                    display: true,
+                    position: 'right',
+                    grid: {
+                        drawOnChartArea: false,
+                    },
+                    title: {
+                        display: true,
+                        text: 'Тоннаж (кг)'
+                    }
+                }
+            }
+        }
     });
 }
 
-if ('serviceWorker' in navigator) navigator.serviceWorker.register('sw.js');
+// Обработка нажатия клавиши Enter
+document.addEventListener('keydown', function(e) {
+    if (e.key === 'Enter' && !e.target.matches('input')) {
+        const btn = document.querySelector('#ex-content button');
+        if (btn) btn.click();
+    }
+});
+
+// Проверка сети
+let isOnline = navigator.onLine;
+
+window.addEventListener('online', () => {
+    isOnline = true;
+    showToast('📶 Соединение восстановлено');
+});
+
+window.addEventListener('offline', () => {
+    isOnline = false;
+    showToast('⚠️ Работаем в офлайн-режиме');
+});
+
+// Регистрация Service Worker
+if ('serviceWorker' in navigator) {
+    window.addEventListener('load', () => {
+        navigator.serviceWorker.register('sw.js').then(registration => {
+            console.log('ServiceWorker зарегистрирован:', registration);
+        }).catch(error => {
+            console.log('Ошибка регистрации ServiceWorker:', error);
+        });
+    });
+}
+
+// Предотвращение масштабирования при двойном тапе
+let lastTouchEnd = 0;
+document.addEventListener('touchend', function(event) {
+    const now = (new Date()).getTime();
+    if (now - lastTouchEnd <= 300) {
+        event.preventDefault();
+    }
+    lastTouchEnd = now;
+}, false);
+
+// Инициализация при загрузке
+window.addEventListener('load', () => {
+    cleanupOldLogs();
+    showToast('Приложение загружено');
+});
 </script>
 </body>
 </html>
