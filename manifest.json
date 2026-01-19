@@ -2,7 +2,8 @@
   "name": "Gym Pro",
   "short_name": "Gym Pro",
   "description": "Профессиональное приложение для тренировок",
-  "start_url": "/",
+  "start_url": "/gym-pwa/index.html",
+  "scope": "/gym-pwa/",
   "display": "standalone",
   "background_color": "#f2f2f7",
   "theme_color": "#007AFF",
@@ -55,13 +56,13 @@
       "name": "Начать тренировку",
       "short_name": "Тренировка",
       "description": "Начать новую тренировку",
-      "url": "/?start=workout"
+      "url": "/gym-pwa/index.html?start=workout"
     },
     {
       "name": "Посмотреть статистику",
       "short_name": "Статистика",
       "description": "Посмотреть прогресс тренировок",
-      "url": "/?screen=stats"
+      "url": "/gym-pwa/index.html?screen=stats"
     }
   ]
 }
