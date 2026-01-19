@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Тест видео</title>
+    <style>
+        body { font-family: -apple-system, sans-serif; padding: 20px; }
+        .video-test { margin: 20px 0; }
+        video { width: 300px; height: auto; border: 2px solid #ccc; }
+        .status { padding: 10px; margin: 5px 0; border-radius: 5px; }
+        .success { background: #d4edda; color: #155724; }
+        .error { background: #f8d7da; color: #721c24; }
+    </style>
+</head>
+<body>
+    <h1>Тест загрузки видео</h1>
+    
+    <div id="v1_3" class="video-test">
+        <h3>v1_3.mp4</h3>
+        <video controls></video>
+        <div class="status"></div>
+    </div>
+    
+    <div id="v1_4" class="video-test">
+        <h3>v1_4.mp4</h3>
+        <video controls></video>
+        <div class="status"></div>
+    </div>
+    
+    <div id="v2_2" class="video-test">
+        <h3>v2_2.mp4</h3>
+        <video controls></video>
+        <div class="status"></div>
+    </div>
+    
+    <script>
+        const videos = [
+            { id: 'v1_3', file: 'video/v1_3.mp4' },
+            { id: 'v1_4', file: 'video/v1_4.mp4' },
+            { id: 'v2_2', file: 'video/v2_2.mp4' }
+        ];
+        
+        videos.forEach(video => {
+            const container = document.getElementById(video.id);
+            const videoEl = container.querySelector('video');
+            const statusEl = container.querySelector('.status');
+            
+            // Полный путь с учетом репозитория
+            const fullPath = '/MagicTrainig/' + video.file;
+            videoEl.src = fullPath;
+            
+            videoEl.addEventListener('loadeddata', () => {
+                statusEl.textContent = '✅ Видео загружено успешно';
+                statusEl.className = 'status success';
+                console.log(`✅ ${video.file} загружен`);
+            });
+            
+            videoEl.addEventListener('error', (e) => {
+                statusEl.textContent = '❌ Ошибка загрузки видео';
+                statusEl.className = 'status error';
+                console.error(`❌ ${video.file} ошибка:`, e);
+                
+                // Попробуем альтернативный путь
+                fetch(fullPath)
+                    .then(response => {
+                        console.log(`Статус ${video.file}:`, response.status, response.statusText);
+                        if (response.status === 404) {
+                            statusEl.textContent += ' (файл не найден)';
+                        } else if (response.status === 200) {
+                            statusEl.textContent += ' (файл доступен, но не воспроизводится)';
+                        }
+                    })
+                    .catch(err => {
+                        console.error('Fetch error:', err);
+                    });
+            });
+            
+            // Запускаем загрузку
+            videoEl.load();
+        });
+    </script>
+</body>
+</html>
